@@ -1,0 +1,23 @@
+{{- if .Values.thriftServer.enableIngress -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "spark.fullname" . }}-thriftserver
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+    component: thriftserver
+spec:
+  rules:
+  - host: thriftserver.192.168.1.151.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "spark.fullname" . }}-thriftserver
+          servicePort: web
+        path: /
+  tls:
+  - hosts:
+    - thriftserver.192.168.1.151.nip.io
+{{- end -}}

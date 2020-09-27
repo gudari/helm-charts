@@ -1,0 +1,44 @@
+{{- if .Values.master.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "spark.fullname" . }}-master
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+    component: master
+{{- with .Values.master.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.master.ingress.tls }}
+  tls:
+{{ toYaml .Values.master.ingress.tls | indent 4 }}
+{{- end }}
+  rules:
+  {{- if .Values.master.ingress.hosts  }}
+  {{- range .Values.master.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+{{ if $.Values.master.ingress.extraPaths }}
+{{ toYaml $.Values.master.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - path: {{ $.Values.master.ingress.path }}
+        backend:
+          serviceName: {{ include "spark.fullname" $ }}-master
+          servicePort: {{ $.Values.master.services.http.port }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "spark.fullname" $ }}-master
+          servicePort: {{ $.Values.master.services.http.port }}
+          {{- if $.Values.master.ingress.path }}
+            path: {{ $.Values.master.ingress.path }}
+          {{- end }}
+{{- end }}
+{{- end }}

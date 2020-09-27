@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zookeeper.fullname" . }}-configmap
+  labels:
+    app: {{ include "zookeeper.name" . }}
+    chart: {{ include "zookeeper.chart" . }}
+    release: {{ .Release.Name }}
+data:
+  ZOO_CFG_tickTime: "2000"
+{{- range $volume := .Values.persistence.volumes}}
+{{- if eq $volume.name "data" }}
+  ZOO_CFG_dataDir: "{{ $volume.path }}"
+{{- end }}
+{{- if eq $volume.name "datalog" }}
+  ZOO_CFG_dataLogDir: "{{ $volume.path }}"
+{{- end }}
+{{- end }}
+  ZOO_CFG_clientPort: "2181"
+  ZOO_CFG_initLimit: "5"
+  ZOO_CFG_syncLimit: "2"
+  ZOO_CFG_4lw_commands_whitelist: "*"
+{{ $replicas := .Values.replicas | int }}
+{{- range $id := until $replicas }}
+  ZOO_CFG_server_{{ add $id 1 }}: "{{ include "zookeeper.fullname" $ }}-zookeeper-{{ add $id }}.{{ include "zookeeper.fullname" $ }}-zookeeper.{{ $.Release.Namespace }}.svc.cluster.local:{{ $.Values.services.server.port }}:{{ $.Values.services.election.port }}"
+{{- end }}
+
+{{- range $key, $value := .Values.config }}
+  {{ $key}}: {{ $value }}
+{{- end }}
+

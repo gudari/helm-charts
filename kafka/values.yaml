@@ -1,0 +1,32 @@
+# The base spark image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+image:
+  repository: gudari/kafka
+  tag: 2.6.0-arm64
+  pullPolicy: IfNotPresent
+
+# The version of the hadoop libraries being used in the image.
+sparkVersion: 2.6.0
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-slave-1"
+
+broker:
+  replicas: 1
+  pdbMinAvailable: 0
+  resources:
+    requests:
+      memory: "1024Mi"
+      cpu: "0.5"
+    limits:
+      memory: "1024Mi"
+      cpu: "0.5"

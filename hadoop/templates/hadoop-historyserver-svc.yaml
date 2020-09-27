@@ -1,0 +1,20 @@
+{{- if .Values.mapred.historyServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hadoop.fullname" . }}-mapred-historyserver
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: mapred-historyserver
+spec:
+  ports:
+  - port: 19888
+    name: web
+  clusterIP: None
+  selector:
+    app: {{ include "hadoop.name" . }}
+    release: {{ .Release.Name }}
+    component: mapred-historyserver
+{{- end }}

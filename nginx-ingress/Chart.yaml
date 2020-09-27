@@ -1,0 +1,14 @@
+apiVersion: v2
+description: A reverse proxy and static file server that provides authentication using Providers (Google, GitHub, and others) to validate accounts by email, domain or group.
+engine: gotpl
+name: nginx-ingress
+sources:
+  - https://github.com/kubernetes/ingress-nginx
+version: 1.41.2
+appVersion: 0.34.1
+home: https://kubernetes.github.io/ingress-nginx/
+dependencies:
+  - name: nginx-ingress
+    version: "1.41.2"
+    repository: https://kubernetes-charts.storage.googleapis.com
+    condition: nginx-ingress.enabled

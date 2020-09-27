@@ -1,0 +1,23 @@
+{{- if .Values.mapred.historyServer.enableIngress -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hadoop.fullname" . }}-mapred-historyserver
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: mapred-historyserver
+spec:
+  rules:
+  - host: historyserver.192.168.1.151.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "hadoop.fullname" . }}-mapred-historyserver
+          servicePort: web
+        path: /
+  tls:
+  - hosts:
+    - historyserver.192.168.1.151.nip.io
+{{- end -}}

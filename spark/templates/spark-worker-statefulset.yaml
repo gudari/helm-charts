@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "spark.fullname" . }}-worker
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/spark-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+    component: worker
+spec:
+  serviceName: {{ include "spark.fullname" . }}-worker
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "spark.name" . }}
+      release: {{ .Release.Name }}
+      component: worker
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/spark-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "spark.name" . }}
+        release: {{ .Release.Name }}
+        component: worker
+    spec:
+      affinity:
+    {{- if .Values.worker.affinity }}
+{{ toYaml .Values.worker.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.worker.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "spark.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: worker
+        {{- else if eq .Values.worker.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "spark.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: worker
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: worker
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.worker.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "spark.fullname" . }}-configmap

@@ -1,0 +1,15 @@
+apiVersion: v2
+description: A reverse proxy and static file server that provides authentication using Providers (Google, GitHub, and others) to validate accounts by email, domain or group.
+icon: https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/logos/OAuth2_Proxy_horizontal.svg
+engine: gotpl
+name: mongodb
+sources:
+  - https://github.com/oauth2-proxy/oauth2-proxy
+version: 7.8.10
+appVersion: 4.2.4
+home: https://oauth2-proxy.github.io/oauth2-proxy/
+dependencies:
+  - name: mongodb
+    version: "7.8.10"
+    repository: https://kubernetes-charts.storage.googleapis.com
+    condition: mongodb.enabled

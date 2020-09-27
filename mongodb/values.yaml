@@ -1,0 +1,20 @@
+mongodb:
+  enabled: true
+
+  image:
+    repository: "arm64v8/mongo"
+    tag: "4.2.9-bionic"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+  persistence:
+    enabled: false
+    mountPath: /data/db
+

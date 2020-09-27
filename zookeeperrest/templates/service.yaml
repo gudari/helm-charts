@@ -1,0 +1,26 @@
+
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zookeeperrest.fullname" . }}-zookeeper-rest
+  labels:
+    app: {{ include "zookeeperrest.name" . }}
+    chart: {{ include "zookeeperrest.chart" . }}
+    release: {{ .Release.Name }}
+    component: zookeeper-rest
+spec:
+{{- if .Values.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
+  ports:
+{{- range $key, $service := .Values.services }}
+  - name: {{ $key }}
+    port: {{ $service.port }}
+    targetPort: {{ $service.targetPort }}
+    protocol: {{ $service.protocol }}
+{{- end }}
+  selector:
+    app: {{ include "zookeeperrest.name" . }}
+    release: {{ .Release.Name }}
+    component: zookeeper-rest

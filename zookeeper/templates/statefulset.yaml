@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "zookeeper.fullname" . }}-zookeeper
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "zookeeper.name" . }}
+    chart: {{ include "zookeeper.chart" . }}
+    release: {{ .Release.Name }}
+    component: zookeeper
+spec:
+  serviceName: {{ include "zookeeper.fullname" . }}-zookeeper
+  replicas: {{ .Values.replicas }}
+  updateStrategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ include "zookeeper.name" . }}
+      release: {{ .Release.Name }}
+      component: zookeeper
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "zookeeper.name" . }}
+        release: {{ .Release.Name }}
+        component: zookeeper
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.podAntiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "zookeeper.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: zookeeper
+        {{- else if eq .Values.podAntiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "zookeeper.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: zookeeper
+        {{- end }}
+      containers:
+      - name: zookeeper
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        ports:
+{{- range $key, $service := .Values.services }}
+        - name: {{ $key }}
+          containerPort: {{ $service.port }}
+{{- end }}
+        livenessProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - "zkServer.sh status"
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - "echo ruok | nc 127.0.0.1 {{ .Values.services.client.port }}"
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        envFrom:
+        - configMapRef:
+            name: {{ include "zookeeper.fullname" . }}-configmap
+        volumeMounts:
+{{- range $volume := .Values.persistence.volumes }}
+        - name: {{ $volume.name }}
+          mountPath: {{ $volume.path }}
+{{- end }}
+{{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+{{- range $volume := .Values.persistence.volumes }}
+  - metadata:
+      name: {{ $volume.name }}
+    spec:
+      accessModes:
+        - {{ $volume.accessMode | quote }}
+      resources:
+        requests:
+          storage: {{ $volume.size | quote }}
+{{- if $volume.storageClass }}
+{{- if (eq "-" $volume.storageClass) }}
+      storageClassName: ""
+{{- else }}
+      storageClassName: "{{ $volume.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}
+{{- else }}
+      volumes:
+{{- range $volume := .Values.persistence.volumes }}
+      - name: {{ $volume.name }}
+        emptyDir: {}
+{{- end }}
+{{- end }}

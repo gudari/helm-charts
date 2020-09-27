@@ -1,0 +1,17 @@
+apiVersion: v1
+description: The Apache Hive Version 3.1.2.
+name: spark
+version: 0.0.1
+appVersion: 3.1.2
+home: https://hive.apache.org/
+sources:
+- https://github.com/apache/hive
+icon: https://hive.apache.org/images/hive_logo_medium.jpg
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com
+dependencies:
+- name: postgresql
+  version: "8.10.6"
+  repository: "https://charts.bitnami.com/bitnami"
+  condition: persistence.postgres.enabled

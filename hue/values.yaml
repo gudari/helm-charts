@@ -1,0 +1,103 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+enabled: true
+image:
+  repository: gudari/hue
+  tag: 4.7.1-arm64
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+hueVersion: 4.7.1
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "700m"
+  limits:
+    memory: "1Gi"
+    cpu: "750m"
+
+config:
+  HUE_INI_hadoop_default_fs_defaultfs: "hdfs://rpi-hadoop-hadoop-hdfs-namenode-0.rpi-hadoop-hadoop-hdfs-namenode.rpi-hadoop.svc.cluster.local:8020"
+  HUE_INI_hadoop_default_webhdfs_url: "http://rpi-hadoop-hadoop-hdfs-namenode-0.rpi-hadoop-hadoop-hdfs-namenode.rpi-hadoop.svc.cluster.local:50070/webhdfs/v1"
+  HUE_INI_desktop_secret_key: "xkvhn71vEvx9Sk2gIG85JawmdseTAwc7"
+  HUE_INI_desktop_app_blacklist: "oozie,jobbrowser,jobsub,hbase,impala,pig,search,sqoop,zookeeper,security,hive"
+  HUE_INI_hadoop_default_resourcemanager_host: "rpi-hadoop-hadoop-yarn-resourcemanager-0.rpi-hadoop-hadoop-yarn-resourcemanager.default.svc.cluster.local"
+  HUE_INI_hadoop_default_resourcemanager_api_url: "http://rpi-hadoop-hadoop-yarn-resourcemanager-0.rpi-hadoop-hadoop-yarn-resourcemanager.default.svc.cluster.local:8088"
+  HUE_INI_hadoop_default_proxy_api_url: "http://rpi-hadoop-hadoop-yarn-resourcemanager-0.rpi-hadoop-hadoop-yarn-resourcemanager.default.svc.cluster.local:8088"
+  HUE_INI_hadoop_default_history_server_api_url: "http://rpi-hadoop-hadoop-mapred-historyserver-0.rpi-hadoop-hadoop-mapred-historyserver.default.svc.cluster.local:19888"
+  HUE_INI_beeswax_hive_server_host: rpi-hive-spark-hiveserver2-0.rpi-hive-spark-hiveserver2.default.svc.cluster.local
+  HUE_INI_beeswax_hive_metastore_host: rpi-hive-spark-metastore-0.rpi-hive-spark-metastore.default.svc.cluster.local
+  HUE_INI_spark_sql_server_host: rpi-spark-spark-thriftserver-0.rpi-hive-spark-hiveserver2.default.svc.cluster.local
+  HUE_INI_desktop_database_engine: postgresql_psycopg2
+  HUE_INI_desktop_database_host: rpi-hue-postgresql
+  HUE_INI_desktop_database_port: "\"5432\""
+  HUE_INI_desktop_database_user: hue
+  HUE_INI_desktop_database_password: hue123
+  HUE_INI_desktop_database_name: hue
+  HUE_INI_beeswax_hive_conf_dir: /opt/hive/conf
+  HUE_INI_zookeeper_clusters_host_port: rpizoo-zookeeper-zookeeper-0.rpizoo-zookeeper-zookeeper.zookeeper.svc.cluster.local:2181,rpizoo-zookeeper-zookeeper-1.rpizoo-zookeeper-zookeeper.zookeeper.svc.cluster.local:2181,rpizoo-zookeeper-zookeeper-2.rpizoo-zookeeper-zookeeper.zookeeper.svc.cluster.local:2181
+  HUE_INI_zookeeper_clusters_rest_url: http://rpizoorest-zookeeperrest-zookeeper-rest.zokkeper-rest.svc.cluster.local:9998
+  HUE_INI_desktop_auth_backend: desktop.auth.backend.OIDCBackend
+  HUE_INI_desktop_oidc_oidc_rp_client_id: dcT8QSQ6Ux4sArrpkf6391S2HHFED6EI
+  HUE_INI_desktop_oidc_oidc_rp_client_secret: GA_MaZdNXrolWahNVRRUv3oowgu8Q0WqdBaMbrXdmVV9Px1AHPCuiQ_n_8MvjN0a
+  HUE_INI_desktop_oidc_oidc_op_authorization_endpoint: https://dev-se96zcxp.eu.auth0.com/authorize
+  HUE_INI_desktop_oidc_oidc_op_token_endpoint: https://dev-se96zcxp.eu.auth0.com/oauth/token
+  HUE_INI_desktop_oidc_oidc_op_user_endpoint: https://dev-se96zcxp.eu.auth0.com/userinfo
+  HUE_INI_desktop_oidc_login_redirect_url: https://hue.gudari.io/oidc/callback/
+  HUE_INI_desktop_oidc_oidc_op_jwks_endpoint: https://dev-se96zcxp.eu.auth0.com/.well-known/jwks.json
+  HUE_INI_desktop_oidc_logout_redirect_url: https://dev-se96zcxp.eu.auth0.com/logout
+  HUE_INI_desktop_oidc_login_redirect_url_failure: https://hue.gudari.io/hue/oidc_failed/
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-slave-1"
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  path: /
+  hosts:
+  - hue.gudari.io
+  extraPaths: []
+  tls:
+  - secretName: hue-tls
+    hosts:
+    - hue.gudari.io
+    
+persistence:
+  postgres:
+    enabled: true
+
+postgresql:
+  image:
+    repository: arm64v8/postgres
+    tag: 12.3
+  global:
+    postgresql:
+      postgresqlPassword: hue123
+      postgresqlUsername: hue
+      postgresqlDatabase: hue
+  master:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-1"
+  postgresqlDataDir: /data/pgdata
+  persistence: 
+    mountPath: /data/

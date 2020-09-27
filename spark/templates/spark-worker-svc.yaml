@@ -1,0 +1,21 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "spark.fullname" . }}-worker
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+    component: worker
+spec:
+  ports:
+  - name: web
+    port: 8081
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: {{ include "spark.name" . }}
+    release: {{ .Release.Name }}
+    component: worker

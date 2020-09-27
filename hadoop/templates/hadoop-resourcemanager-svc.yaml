@@ -1,0 +1,20 @@
+{{- if .Values.yarn.resourceManager.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-resourcemanager
+spec:
+  ports:
+  - port: 8088
+    name: web
+  clusterIP: None
+  selector:
+    app: {{ include "hadoop.name" . }}
+    release: {{ .Release.Name }}
+    component: yarn-resourcemanager
+{{- end }}

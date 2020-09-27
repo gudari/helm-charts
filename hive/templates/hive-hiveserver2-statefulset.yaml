@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hive.fullname" . }}-hiveserver2
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hive-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "hive.name" . }}
+    chart: {{ include "hive.chart" . }}
+    release: {{ .Release.Name }}
+    component: hiveserver2
+spec:
+  serviceName: {{ include "hive.fullname" . }}-hiveserver2
+  replicas: {{ .Values.hiveserver2.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hive.name" . }}
+      release: {{ .Release.Name }}
+      component: hiveserver2
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hive-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "hive.name" . }}
+        release: {{ .Release.Name }}
+        component: hiveserver2
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hive.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: hiveserver2
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hive.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: hiveserver2
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: hiveserver2
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.hiveserver2.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 10002
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+          httpGet:
+            path: /
+            port: 10002
+          initialDelaySeconds: 120
+          timeoutSeconds: 
+        envFrom:
+        - configMapRef:
+            name: {{ include "hive.fullname" . }}-configmap

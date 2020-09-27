@@ -1,0 +1,46 @@
+oauth2-proxy:
+  enabled: true
+
+  image:
+    repository: "quay.io/pusher/oauth2_proxy"
+    tag: "v5.1.0-arm64"
+  config:
+    clientID: "dcT8QSQ6Ux4sArrpkf6391S2HHFED6EI"
+    clientSecret: "GA_MaZdNXrolWahNVRRUv3oowgu8Q0WqdBaMbrXdmVV9Px1AHPCuiQ_n_8MvjN0a"
+    cookieSecret: "4vTdpDTsTKdC0pgXmYxu6A=="
+  extraArgs:
+    provider: oidc
+    skip-provider-button: "true"
+    upstream: file:///dev/null
+    oidc-issuer-url: https://dev-se96zcxp.eu.auth0.com/
+    redirect-url: https://auth0.gudari.io/oauth2/callback
+    email-domain: "*"
+    whitelist-domain: .gudari.io
+    cookie-domain: .gudari.io
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "node-role.kubernetes.io/master"
+              operator: In
+              values:
+              - "true"
+  ingress:
+    enabled: true
+    path: /
+    hosts:
+    - auth0.gudari.io
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    tls:
+    - secretName: oauth2-proxy-tls
+      hosts:
+      - auth0.gudari.io
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50Mi
+    limits:
+      cpu: 50m
+      memory: 50Mi

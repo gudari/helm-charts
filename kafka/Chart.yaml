@@ -1,0 +1,12 @@
+apiVersion: v1
+description: The Apache Kafka Version 2.6.0.
+name: kafka
+version: 0.0.1
+appVersion: 2.6.0
+home: https://kafka.apache.org/
+sources:
+- https://github.com/apache/kafka
+icon: https://spark.apache.org/images/spark-logo-trademark.png
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

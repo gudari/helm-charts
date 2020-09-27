@@ -1,0 +1,68 @@
+{{- if .Values.hdfs.dataNode.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-datanode
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-datanode
+spec:
+  clusterIP: None
+{{- if .Values.hdfs.dataNode.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
+  ports:
+  {{- range $key, $port := .Values.hdfs.dataNode.ports }}
+  - name: {{ $key }}
+    port: {{ $port.containerPort }}
+    targetPort: {{ $key }}
+    protocol: {{ $port.protocol }}
+  {{- end }}
+  selector:
+    app: {{ include "hadoop.name" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-datanode
+{{- end }}
+---
+{{- if and .Values.hdfs.dataNode.enabled .Values.hdfs.dataNode.servicePerReplica.enabled }}
+{{- $count := .Values.hdfs.dataNode.replicas | int -}}
+{{- $serviceValues := .Values.hdfs.dataNode.servicePerReplica -}}
+apiVersion: v1
+kind: List
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-datanode-serviceperreplica
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ $.Release.Name }}
+    component: hdfs-datanode
+items:
+{{- range $i, $e := until $count }}
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
+      labels:
+        app: {{ include "hadoop.name" $ }}
+        chart: {{ include "hadoop.chart" $ }}
+        release: {{ $.Release.Name }}
+        component: hdfs-datanode
+    spec:
+      {{- if $serviceValues.clusterIP }}
+      clusterIP: {{ $serviceValues.clusterIP }}
+      {{- end }}
+      ports:
+        - name: web
+          port: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
+          targetPort: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
+      selector:
+        app: {{ include "hadoop.name" $ }}
+        release: {{ $.Release.Name }}
+        component: hdfs-datanode
+        statefulset.kubernetes.io/pod-name: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}  
+      type: "{{ $serviceValues.type }}"
+{{ end }}
+{{ end }}
+    

@@ -1,0 +1,47 @@
+{{- if .Values.hdfs.nameNode.enabled }}
+{{- if .Values.hdfs.nameNode.ingress.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-namenode
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-namenode
+{{- with .Values.hdfs.nameNode.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.hdfs.nameNode.ingress.tls }}
+  tls:
+{{ toYaml .Values.hdfs.nameNode.ingress.tls | indent 4 }}
+{{- end }}
+  rules:
+  {{- if .Values.hdfs.nameNode.ingress.hosts  }}
+  {{- range .Values.hdfs.nameNode.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+{{ if $.Values.hdfs.nameNode.ingress.extraPaths }}
+{{ toYaml $.Values.hdfs.nameNode.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - path: {{ $.Values.hdfs.nameNode.ingress.path }}
+        backend:
+          serviceName: {{ include "hadoop.fullname" $ }}-hdfs-namenode
+          servicePort: {{ $.Values.hdfs.nameNode.ports.http.containerPort }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "hadoop.fullname" $ }}-hdfs-namenode
+          servicePort: {{ $.Values.hdfs.nameNode.ports.http.containerPort }}
+          {{- if $.Values.hdfs.nameNode.ingress.path }}
+            path: {{ $.Values.hdfs.nameNode.ingress.path }}
+          {{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}

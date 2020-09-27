@@ -1,0 +1,21 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hive.fullname" . }}-metastore
+  labels:
+    app: {{ include "hive.name" . }}
+    chart: {{ include "hive.chart" . }}
+    release: {{ .Release.Name }}
+    component: metastore
+spec:
+  ports:
+  - name: thrift
+    port: 9083
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: {{ include "hive.name" . }}
+    release: {{ .Release.Name }}
+    component: metastore

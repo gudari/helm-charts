@@ -1,0 +1,76 @@
+# The base spark image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+image:
+  repository: gudari/hive
+  tag: 3.1.2-arm64v8
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+hiveVersion: 3.1.2
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+
+metastore:
+  replicas: 1
+  pdbMinAvailable: 0
+  resources:
+    requests:
+      memory: "1024Mi"
+      cpu: "1"
+    limits:
+      memory: "1024Mi"
+      cpu: "1"
+  enableIngress: true
+
+hiveserver2:
+  replicas: 1
+  pdbMinAvailable: 0
+  resources:
+    requests:
+      memory: "2048Mi"
+      cpu: "1"
+    limits:
+      memory: "2048Mi"
+      cpu: "1"
+
+persistence:
+  postgres:
+    enabled: true
+
+postgresql:
+  image:
+    repository: arm64v8/postgres
+    tag: 12.3
+  global:
+    postgresql:
+      postgresqlPassword: hive123
+      postgresqlUsername: hive
+      postgresqlDatabase: hive
+  postgresqlDataDir: /data/pgdata
+  persistence: 
+    mountPath: /data/
+
+config:
+  HADOOP_CLUSTER_NAME: 'local'
+
+  # CORE configurations
+  CORE_CONF_fs_defaultFS: hdfs://rpi-hadoop-hadoop-hdfs-namenode-0.rpi-hadoop-hadoop-hdfs-namenode.default.svc.cluster.local:8020
+  CORE_CONF_hadoop_http_staticuser_user: root
+  CORE_CONF_hadoop_proxyuser_hue_hosts: "\'*\'"
+  CORE_CONF_hadoop_proxyuser_hue_groups: "\'*\'"
+  CORE_CONF_hadoop_proxyuser_root_hosts: "\'*\'"
+  CORE_CONF_hadoop_proxyuser_root_groups: "\'*\'"
+  CORE_CONF_hadoop_proxyuser_admin_hosts: "\'*\'"
+  CORE_CONF_hadoop_proxyuser_admin_groups: "\'*\'"
+
+  # HDFS configurations
+  HDFS_CONF_dfs_namenode_name_dir: file:///hadoop/dfs/name
+  HDFS_CONF_dfs_datanode_data_dir: file:///hadoop/dfs/data
+  HDFS_CONF_dfs_webhdfs_enabled: "\"true\""
+  HDFS_CONF_dfs_permissions_enabled: "\"false\""
+  HDFS_CONF_dfs_datanode_use_datanode_hostname: "\"false\""
+  HDFS_CONF_dfs_client_use_datanode_hostname: "\"false\""
+  HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: "\"false\""
+  HDFS_CONF_dfs_datanode_http_address: "0.0.0.0:50075"
+  HDFS_CONF_dfs_namenode_http___address: "0.0.0.0:50070"

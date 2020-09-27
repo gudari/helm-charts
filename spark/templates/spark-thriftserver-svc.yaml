@@ -1,0 +1,27 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "spark.fullname" . }}-thriftserver
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+    component: thriftserver
+spec:
+  ports:
+  - name: jdbc
+    port: 10000
+    protocol: TCP
+  - name: thrift-http
+    port: 10001
+    protocol: TCP
+  - name: web
+    port: 4040
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: {{ include "spark.name" . }}
+    release: {{ .Release.Name }}
+    component: thriftserver

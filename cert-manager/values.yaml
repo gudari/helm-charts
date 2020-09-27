@@ -1,0 +1,71 @@
+cert-manager:
+  enabled: true
+  installCRDs: true
+  ingressShim:
+    defaultIssuerName: cm-ca-issuer
+    defaultIssuerKind: ClusterIssuer
+
+  image:
+    repository: quay.io/jetstack/cert-manager-controller
+    tag: v0.15.2
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "node-role.kubernetes.io/master"
+            operator: In
+            values:
+            - "true"
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 50m
+    limits:
+      memory: "100Mi"
+      cpu: 50m
+
+  webhook:
+    image:
+      repository: quay.io/jetstack/cert-manager-webhook
+      tag: v0.15.2
+
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: In
+                values:
+                - "true"
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 50m
+      limits:
+        memory: "100Mi"
+        cpu: 50m
+
+  cainjector:
+    image:
+      repository: quay.io/jetstack/cert-manager-cainjector
+      tag: v0.15.2
+  
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: In
+                values:
+                - "true"
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 50m
+      limits:
+        memory: "100Mi"
+        cpu: 50m

@@ -1,0 +1,99 @@
+jupyterhub:
+  enabled: true
+  hub:
+    extraConfig:
+      jupyterlab: |
+        c.Spawner.default_url = "/lab"
+      ipaddress: |
+        from kubernetes import client
+
+        def modify_pod_hook(spawner, pod):
+            pod.spec.containers[0].env.append(client.V1EnvVar("JUPYTER_POD_IP", None, client.V1EnvVarSource(None, client.V1ObjectFieldSelector(None, "status.podIP"))))
+            return pod
+        c.KubeSpawner.modify_pod_hook = modify_pod_hook
+    extraEnv:
+      OAUTH2_AUTHORIZE_URL: https://dev-se96zcxp.eu.auth0.com/authorize
+      OAUTH2_TOKEN_URL: https://dev-se96zcxp.eu.auth0.com/oauth/token
+      OAUTH_CALLBACK_URL: https://jupyterhub.gudari.io/hub/oauth_callback
+    image:
+      name: gudari/jupyterhub
+      tag: 0.9.0
+    nodeSelector:
+      kubernetes.io/hostname: rpi-slave-1
+  auth:
+    type: custom
+    custom:
+      className: oauthenticator.generic.GenericOAuthenticator
+      config:
+        login_service: "auth0"
+        client_id: "dcT8QSQ6Ux4sArrpkf6391S2HHFED6EI"
+        client_secret: "GA_MaZdNXrolWahNVRRUv3oowgu8Q0WqdBaMbrXdmVV9Px1AHPCuiQ_n_8MvjN0a"
+        token_url: https://dev-se96zcxp.eu.auth0.com/oauth/token
+        userdata_url: https://dev-se96zcxp.eu.auth0.com/userinfo
+        username_key: email
+    admin:
+      users:
+      - aartola1986@gmail.com
+    
+  proxy:
+    secretToken: '23fabbe0043f53e8f063e41d8d849e7d5cd35b3ef9066a1a37cb3438c5a095c9'
+    service:
+      type: ClusterIP
+    chp:
+      image:
+        name: gudari/configurable-http-proxy
+        tag: 4.2.1
+    traefik:
+      image:
+        name: traefik
+        # NOTE: we are pinning to patch version only to ensure we don't use a
+        #       cached old version of v2.2. When we bump this to v2.3 we should
+        #       stop using the patch version.
+        tag: v2.2.4
+    nodeSelector:
+      kubernetes.io/hostname: rpi-slave-1
+  singleuser:
+    defaultUrl: "/lab"
+    networkTools:
+      image:
+        name: gudari/network-tools
+        tag: 0.9.0
+    image:
+      name: gudari/jupyter-custom
+      tag: 0.9.0
+      pullPolicy: Always
+    extraEnv:
+      PYSPARK_PYTHON: python3
+      PYSPARK_DRIVER_PYTHON: python3
+      SPARK_OPTS: >-
+        --deploy-mode=client
+        --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
+        --conf spark.ui.reverseProxy=true
+        --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
+      PYSPARK_SUBMIT_ARGS: >-
+        --deploy-mode=client
+        --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
+        --conf spark.ui.reverseProxy=true
+        --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
+        pyspark-shell
+    nodeSelector:
+      kubernetes.io/hostname: rpi-slave-1
+  scheduling:
+    userScheduler:
+      enabled: false
+  prePuller:
+    hook:
+        enabled: false
+    continuous:
+        enabled: false
+  ingress:
+    enabled: true
+    hosts:
+    - jupyterhub.gudari.io
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    tls:
+    - hosts:
+      - jupyterhub.gudari.io
+      secretName: jupyterhub-tls
+ 

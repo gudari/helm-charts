@@ -1,0 +1,84 @@
+{{- if .Values.yarn.timeLineServer.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-timelineserver
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-timelineserver
+spec:
+  serviceName: {{ include "hadoop.fullname" . }}-yarn-timelineserver
+  replicas: {{ .Values.yarn.timeLineServer.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: yarn-timelineserver
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "hadoop.name" . }}
+        release: {{ .Release.Name }}
+        component: yarn-timelineserver
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hadoop.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: yarn-timelineserver
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hadoop.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: yarn-timelineserver
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: yarn-timelineserver
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.yarn.timeLineServer.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8188
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8188
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "hadoop.fullname" . }}-configmap
+        volumeMounts:
+        - name: store
+          mountPath: /hadoop/yarn/timeline
+      volumes:
+      - name: store
+      {{- if .Values.persistence.timeLineServer.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "hadoop.fullname" . }}-yarn-timelineserver
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+{{- end }}

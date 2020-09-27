@@ -1,0 +1,20 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kafka.fullname" . }}-broker
+  labels:
+    app: {{ include "kafka.name" . }}
+    chart: {{ include "kafka.chart" . }}
+    release: {{ .Release.Name }}
+    component: broker
+spec:
+  ports:
+  - name: broker  
+    port: 9092
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: {{ include "kafka.name" . }}
+    release: {{ .Release.Name }}
+    component: broker

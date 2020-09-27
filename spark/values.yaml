@@ -1,0 +1,130 @@
+# The base spark image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+image:
+  repository: gudari/spark
+  tag: 3.0.0-arm64v8
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+sparkVersion: 3.0.0
+
+master:
+  replicas: 1
+  pdbMinAvailable: 0
+  antiAffinity: "soft"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+  services:
+    http:
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    ipc:
+      port: 7077
+      targetPort: 7077
+      protocol: TCP
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "0.5"
+    limits:
+      memory: "1024Mi"
+      cpu: "0.5"
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+#      nginx.ingress.kubernetes.io/auth-url: https://auth0.gudari.io/oauth2/auth
+#      nginx.ingress.kubernetes.io/auth-signin: https://auth0.gudari.io/oauth2/start?rd=https://$host$request_uri
+    path: /
+    hosts:
+    - spark.gudari.io
+    extraPaths: []
+    tls:
+    - secretName: spark-tls
+      hosts:
+      - spark.gudari.io
+
+worker:
+  replicas: 2
+  pdbMinAvailable: 0
+  antiAffinity: "hard"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-2"
+              - "rpi-slave-3"
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2"
+    limits:
+      memory: "4Gi"
+      cpu: "2"
+
+thriftServer:
+  replicas: 0
+  pdbMinAvailable: 0
+  antiAffinity: "soft"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "0.5"
+    limits:
+      memory: "1Gi"
+      cpu: "0.5"
+  enableIngress: true
+
+config:
+  HADOOP_CLUSTER_NAME: 'local'
+
+  # CORE configurations
+  CORE_CONF_fs_defaultFS: hdfs://rpi-hadoop-hadoop-hdfs-namenode-0.rpi-hadoop-hadoop-hdfs-namenode.rpi-hadoop.svc.cluster.local:8020
+  CORE_CONF_hadoop_http_staticuser_user: root
+  CORE_CONF_hadoop_proxyuser_hue_hosts: "\'*\'"
+  CORE_CONF_hadoop_proxyuser_hue_groups: "\'*\'"
+
+  # HDFS configurations
+  HDFS_CONF_dfs_namenode_name_dir: file:///hadoop/dfs/name
+  HDFS_CONF_dfs_datanode_data_dir: file:///hadoop/dfs/data
+  HDFS_CONF_dfs_webhdfs_enabled: "\"true\""
+  HDFS_CONF_dfs_permissions_enabled: "\"false\""
+  HDFS_CONF_dfs_datanode_use_datanode_hostname: "\"false\""
+  HDFS_CONF_dfs_client_use_datanode_hostname: "\"false\""
+  HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: "\"false\""
+  HDFS_CONF_dfs_datanode_http_address: "0.0.0.0:50075"
+  HDFS_CONF_dfs_namenode_http___address: "0.0.0.0:50070"
+
+  # HIVE configurations
+  HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName: 'org.postgresql.Driver'
+  HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: 'jdbc:postgresql://rpi-hive-postgresql:5432/hive?createDatabaseIfNotExist=true'
+  HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName: hive
+  HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword: hive123
+  HIVE_SITE_CONF_hive_metastore_warehouse_dir: "hdfs://rpi-hadoop-hadoop-hdfs-namenode-0.rpi-hadoop-hadoop-hdfs-namenode.default.svc.cluster.local:8020/user/hive/warehouse"
+  HIVE_SITE_CONF_hive_metastore_uris: "thrift://rpi-hive-spark-metastore-0.rpi-hive-spark-metastore.default.svc.cluster.local:9083"
+  HIVE_SITE_CONF_hive.metastore_schema_verification: "\"true\""
+  HIVE_SITE_CONF_datanucleus_autoCreateSchema: "\"true\""
+  HIVE_SITE_CONF_datanucleus_fixedDatastore: "\"true\""

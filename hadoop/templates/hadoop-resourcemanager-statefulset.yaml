@@ -1,0 +1,74 @@
+{{- if .Values.yarn.resourceManager.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-resourcemanager
+spec:
+  serviceName: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
+  replicas: {{ .Values.yarn.resourceManager.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: yarn-resourcemanager
+  template:
+    metadata:
+      labels:
+        app: {{ include "hadoop.name" . }}
+        release: {{ .Release.Name }}
+        component: yarn-resourcemanager
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hadoop.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: yarn-resourcemanager
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hadoop.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: yarn-resourcemanager
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: yarn-resourcemanager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - containerPort: 8088
+          name: web
+        resources:
+{{ toYaml .Values.yarn.resourceManager.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /ws/v1/cluster/info
+            port: 8088
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /ws/v1/cluster/info
+            port: 8088
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "hadoop.fullname" . }}-configmap
+{{- end }}

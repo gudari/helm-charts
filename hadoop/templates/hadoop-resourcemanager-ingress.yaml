@@ -1,0 +1,25 @@
+{{- if .Values.yarn.resourceManager.enabled }}
+{{- if .Values.yarn.resourceManager.enableIngress }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-resourcemanager
+spec:
+  rules:
+  - host: resourcemanager.192.168.1.151.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
+          servicePort: web
+        path: /
+  tls:
+  - hosts:
+    - resourcemanager.192.168.1.151.nip.io
+{{- end }}
+{{- end }}

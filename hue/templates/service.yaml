@@ -1,0 +1,20 @@
+
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hue.fullname" . }}-hue
+  labels:
+    app: {{ include "hue.name" . }}
+    chart: {{ include "hue.chart" . }}
+    release: {{ .Release.Name }}
+    component: hue-namenode
+spec:
+  ports:
+  - name: web
+    port: 8000
+    protocol: TCP
+  selector:
+    app: {{ include "hue.name" . }}
+    release: {{ .Release.Name }}
+    component: hue

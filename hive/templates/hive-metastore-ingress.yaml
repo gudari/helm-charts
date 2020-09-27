@@ -1,0 +1,23 @@
+{{- if .Values.metastore.enableIngress -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hive.fullname" . }}-metastore
+  labels:
+    app: {{ include "hive.name" . }}
+    chart: {{ include "hive.chart" . }}
+    release: {{ .Release.Name }}
+    component: metastore
+spec:
+  rules:
+  - host: metastore.192.168.1.151.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "hive.fullname" . }}-metastore
+          servicePort: web
+        path: /
+  tls:
+  - hosts:
+    - metastore.192.168.1.151.nip.io
+{{- end -}}

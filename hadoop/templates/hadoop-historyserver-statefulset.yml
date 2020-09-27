@@ -1,0 +1,73 @@
+{{- if .Values.mapred.historyServer.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-mapred-historyserver
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: mapred-historyserver
+spec:
+  serviceName: {{ include "hadoop.fullname" . }}-mapred-historyserver
+  replicas: {{ .Values.mapred.historyServer.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: mapred-historyserver
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "hadoop.name" . }}
+        release: {{ .Release.Name }}
+        component: mapred-historyserver
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hadoop.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: mapred-historyserver
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hadoop.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: mapred-historyserver
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: mapred-historyserver
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.mapred.historyServer.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /ws/v1/history/info
+            port: 19888
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /ws/v1/history/info
+            port: 19888
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "hadoop.fullname" . }}-configmap
+{{- end }}

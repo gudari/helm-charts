@@ -1,0 +1,12 @@
+apiVersion: v2
+description: The Apache Zookeeper Rest 3.6.1.
+name: zookeeperrest
+version: 0.0.1
+appVersion: 3.6.1
+home: https://zookeeper.apache.org/
+sources:
+- https://github.com/apache/zookeeper
+icon: https://zookeeper.apache.org/images/zookeeper_small.gif
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

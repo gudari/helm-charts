@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zookeeperrest.fullname" . }}-zookeeper-rest
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "zookeeperrest.name" . }}
+    chart: {{ include "zookeeperrest.chart" . }}
+    release: {{ .Release.Name }}
+    component: zookeeper-rest
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ include "zookeeperrest.name" . }}
+      release: {{ .Release.Name }}
+      component: zookeeper-rest
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "zookeeperrest.name" . }}
+        release: {{ .Release.Name }}
+        component: zookeeper-rest
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.podAntiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "zookeeperrest.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: zookeeper-rest
+        {{- else if eq .Values.podAntiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "zookeeperrest.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: zookeeperrest
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: zookeeper-rest
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        ports:
+{{- range $key, $service := .Values.services }}
+        - name: {{ $key }}
+          containerPort: {{ $service.port }}
+{{- end }}
+        readinessProbe:
+          httpGet:
+            path: /application.wadl
+            port: {{ .Values.services.rest.port }}
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        livenessProbe:
+          httpGet:
+            path: /application.wadl
+            port: {{ .Values.services.rest.port }}
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        envFrom:
+        - configMapRef:
+            name: {{ include "zookeeperrest.fullname" . }}-configmap

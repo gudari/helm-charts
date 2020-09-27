@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "spark.fullname" . }}-thriftserver
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/spark-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+    component: thriftserver
+spec:
+  serviceName: {{ include "spark.fullname" . }}-thriftserver
+  replicas: {{ .Values.thriftServer.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "spark.name" . }}
+      release: {{ .Release.Name }}
+      component: thriftserver
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/spark-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "spark.name" . }}
+        release: {{ .Release.Name }}
+        component: thriftserver
+    spec:
+      affinity:
+    {{- if .Values.thriftServer.affinity }}
+{{ toYaml .Values.thriftServer.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.thriftServer.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "spark.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: thriftserver
+        {{- else if eq .Values.thriftServer.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "spark.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: thriftserver
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: thriftserver
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.thriftServer.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 4040
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 4040
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "spark.fullname" . }}-configmap

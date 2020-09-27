@@ -1,0 +1,46 @@
+{{- if .Values.enabled }}
+{{- if .Values.ingress.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hue.fullname" . }}-hue
+  labels:
+    app: {{ include "hue.name" . }}
+    chart: {{ include "hue.chart" . }}
+    release: {{ .Release.Name }}
+    component: hue
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingress.tls }}
+  tls:
+{{ toYaml .Values.ingress.tls | indent 4 }}
+{{- end }}
+  rules:
+  {{- if .Values.ingress.hosts  }}
+  {{- range .Values.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+{{ if $.Values.ingress.extraPaths }}
+{{ toYaml $.Values.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - path: {{ $.Values.ingress.path }}
+        backend:
+          serviceName: {{ include "hue.fullname" $ }}-hue
+          servicePort: web
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "hue.fullname" . }}-hue
+          servicePort: web
+      {{- if $.Values.ingress.path }}
+        path: {{ $.Values.ingress.path }}
+      {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

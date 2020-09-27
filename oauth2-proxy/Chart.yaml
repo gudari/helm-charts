@@ -1,0 +1,15 @@
+apiVersion: v2
+description: A reverse proxy and static file server that provides authentication using Providers (Google, GitHub, and others) to validate accounts by email, domain or group.
+icon: https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/logos/OAuth2_Proxy_horizontal.svg
+engine: gotpl
+name: oauth2-proxy
+sources:
+  - https://github.com/oauth2-proxy/oauth2-proxy
+version: 3.2.2
+appVersion: 5.1.0
+home: https://oauth2-proxy.github.io/oauth2-proxy/
+dependencies:
+  - name: oauth2-proxy
+    version: "3.2.2"
+    repository: https://kubernetes-charts.storage.googleapis.com
+    condition: oauth2-proxy.enabled

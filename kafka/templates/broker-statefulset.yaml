@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kafka.fullname" . }}-broker
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/kafka-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "kafka.name" . }}
+    chart: {{ include "kafka.chart" . }}
+    release: {{ .Release.Name }}
+    component: broker
+spec:
+  serviceName: {{ include "kafka.fullname" . }}-broker
+  replicas: {{ .Values.broker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "kafka.name" . }}
+      release: {{ .Release.Name }}
+      component: broker
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/kafka-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "kafka.name" . }}
+        release: {{ .Release.Name }}
+        component: broker
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "kafka.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: broker
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "kafka.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: broker
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: broker
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.broker.resources | indent 10 }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "kafka.fullname" . }}-configmap

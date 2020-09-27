@@ -1,0 +1,62 @@
+{{- if .Values.hdfs.dataNode.enabled }}
+{{- if and .Values.hdfs.dataNode.servicePerReplica.enabled .Values.hdfs.dataNode.ingressPerReplica.enabled }}
+{{- $count := .Values.hdfs.dataNode.replicas | int -}}
+{{- $ingressValues := .Values.hdfs.dataNode.ingressPerReplica -}}
+{{- range $i, $e := until $count }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
+  labels:
+    app: {{ include "hadoop.name" $ }}
+    chart: {{ include "hadoop.chart" $ }}
+    release: {{ $.Release.Name }}
+    component: hdfs-datanode
+{{- if $ingressValues.annotations }}
+  annotations:
+  {{- range $annot, $value := $ingressValues.annotations }}
+    {{ $annot }}: "{{ $value }}"
+  {{- end }}
+{{- end }}
+spec:
+  {{- if $ingressValues.tls }}
+  tls:
+  {{- range $t := $ingressValues.tls }}
+  - secretName: {{ $t.secretName }}-{{ $i }}
+    {{- if $t.domains }}
+    hosts:
+    {{- range $domain := $t.domains }}
+    - {{ $ingressValues.hostPrefix }}-{{ $i }}.{{ $domain }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  rules:
+  {{- if $ingressValues.domains  }}
+  {{- range $domain := $ingressValues.domains }}
+  - host: {{ $ingressValues.hostPrefix }}-{{ $i }}.{{ $domain }}
+    http:
+      paths:
+    {{ if $ingressValues.extraPaths }}
+    {{ toYaml $ingressValues.extraPaths | indent 12 }}
+    {{- end }}
+      - path: {{ $ingressValues.path }}
+        backend:
+          serviceName: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
+          servicePort: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
+  {{- end }}
+  {{- else }}
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
+          servicePort: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
+          {{- if $ingressValues.path }}
+            path: {{ $ingressValues.path }}
+          {{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

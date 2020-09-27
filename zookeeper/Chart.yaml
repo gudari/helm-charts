@@ -1,0 +1,12 @@
+apiVersion: v2
+description: A centralized service for maintaining configuration information, naming, providing distributed synchronization, and providing group services.
+name: zookeeper
+version: 0.0.1
+appVersion: 3.6.1
+home: https://zookeeper.apache.org/
+icon: https://zookeeper.apache.org/images/zookeeper_small.gif
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com
+
+

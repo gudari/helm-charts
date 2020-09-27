@@ -1,0 +1,5 @@
+1. You can check the status of HDFS by running this command:
+   kubectl exec -n {{ .Release.Namespace }} -it {{ include "hadoop.fullname" . }}-hdfs-namenode-0 -- hdfs dfsadmin -report
+
+1. You can refresh nodes running this command:
+   kubectl exec -n {{ .Release.Namespace }} -it {{ include "hadoop.fullname" . }}-hdfs-namenode-0 -- hdfs dfsadmin -refreshNodes

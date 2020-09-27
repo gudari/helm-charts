@@ -1,0 +1,27 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zookeeper.fullname" . }}-zookeeper
+  labels:
+    app: {{ include "zookeeper.name" . }}
+    chart: {{ include "zookeeper.chart" . }}
+    release: {{ .Release.Name }}
+    component: zookeeper
+spec:
+  clusterIP: None
+{{- if .Values.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
+  ports:
+{{- range $key, $service := .Values.services }}
+    - name: {{ $key }}
+      port: {{ $service.port }}
+      targetPort: {{ $service.targetPort }}
+      protocol: {{ $service.protocol }}
+{{- end }}
+  selector:
+    app: {{ include "zookeeper.name" . }}
+    release: {{ .Release.Name }}
+    component: zookeeper

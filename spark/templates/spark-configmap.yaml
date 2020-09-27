@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "spark.fullname" . }}-configmap
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+data:
+  SPARK_MASTER: spark://{{ include "spark.fullname" . }}-master-0.{{ include "spark.fullname" . }}-master.{{ .Release.Namespace }}.svc.cluster.local:7077
+  SPARK_DEFAULT_CONF_spark_master: spark://{{ include "spark.fullname" . }}-master-0.{{ include "spark.fullname" . }}-master.{{ .Release.Namespace }}.svc.cluster.local:7077
+  HIVE_SERVER2_TRANSPORT_MODE: 'binary'
+  HIVE_SERVER2_THRIFT_PORT: '10000'
+  HIVE_SERVER2_THRIFT_HTTP_PORT: '10001'
+  HIVE_SERVER2_AUTHENTICATION: 'NONE'
+  HIVE_SERVER2_ENABLE_DOAS: 'true'
+  SPARK_WORKER_CORES: "2"
+  SPARK_DEFAULT_CONF_spark_ui_reverseProxy: 'true'
+  SPARK_DEFAULT_CONF_spark_ui_reverseProxyUrl: 'https://{{ (index .Values.master.ingress.hosts 0) }}/spark/'
+
+{{- range $key, $value := .Values.config }}
+  {{ $key}}: {{ $value }}
+{{- end }}
+

@@ -1,0 +1,20 @@
+{{- if .Values.yarn.timeLineServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-timelineserver
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-timelineserver
+spec:
+  ports:
+  - port: 8188
+    name: web
+  clusterIP: None
+  selector:
+    app: {{ include "hadoop.name" . }}
+    release: {{ .Release.Name }}
+    component: yarn-timelineserver
+{{- end }}

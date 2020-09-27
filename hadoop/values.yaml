@@ -1,0 +1,203 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+image:
+  repository: gudari/hadoop
+  tag: 3.2.1-arm64v8
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+hadoopVersion: 3.2.1
+
+hdfs:
+  nameNode:
+    enabled: true
+    replicas: 1
+    annotations: {}
+    antiAffinity: "soft"
+    nodeSelector: {}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-1"
+    pdbMinAvailable: 0
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "350m"
+      limits:
+        memory: "512Mi"
+        cpu: "400m"
+    publishNotReadyAddresses: true
+    ports:
+      http:
+        containerPort: 50070
+        protocol: TCP
+      ipc:
+        containerPort: 8020
+        protocol: TCP
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+#        nginx.ingress.kubernetes.io/auth-url: https://auth0.gudari.io/oauth2/auth
+#        nginx.ingress.kubernetes.io/auth-signin: https://auth0.gudari.io/oauth2/start?rd=https://$host$request_uri
+      path: /
+      hosts:
+      - hdfs.gudari.io
+      extraPaths: []
+      tls:
+      - secretName: hdfs-tls
+        hosts:
+        - hdfs.gudari.io
+
+  dataNode:
+    enabled: true
+    replicas: 2
+    annotations: {}
+    antiAffinity: ""
+    nodeSelector: {}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-2"
+                - "rpi-slave-3"
+    pdbMinAvailable: 0
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "350m"
+      limits:
+        memory: "512Mi"
+        cpu: "400m"
+    publishNotReadyAddresses: true
+    ports:
+      http:
+        containerPort: 50075
+        protocol: TCP
+      data:
+        containerPort: 50010
+        protocol: TCP
+      ipc:
+        containerPort: 50020
+        protocol: TCP
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: 20Gi
+    servicePerReplica:
+      enabled: true
+      type: ClusterIP
+      port: 50075
+      targetPort: 50075
+    ingressPerReplica:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+      path: /
+      hostPrefix: datanode
+      domains:
+      - gudari.io
+      extraPaths: []
+      tls:
+      - secretName: hdfs-tls
+        domains:
+        - gudari.io
+
+mapred:
+  historyServer:
+    enabled: false
+    replicas: 1
+    pdbMinAvailable: 0
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "450m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+    enableIngress: false
+
+
+yarn:
+  resourceManager:
+    enabled: false
+    replicas: 1
+    pdbMinAvailable: 0
+
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "450m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+    enableIngress: false
+
+  nodeManager:
+    enabled: false
+    replicas: 1
+    pdbMinAvailable: 0
+
+    resources:
+      requests:
+        memory: "2048Mi"
+        cpu: "500m"
+      limits:
+        memory: "2048Mi"
+        cpu: "500m"
+
+  timeLineServer:
+    enabled: false
+    replicas: 1
+    pdbMinAvailable: 0
+
+    # CPU and memory resources allocated to each node manager pod.
+    # This should be tuned to fit your workload.
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "400m"
+      limits:
+        memory: "512Mi"
+        cpu: "450m"
+
+    enableIngress: false
+
+persistence:
+  nameNode:
+    enabled: enabled
+    storageClass: local-path 
+    accessMode: ReadWriteOnce
+    size: 5Gi
+
+  dataNode:
+    enabled: enabled
+    storageClass: local-path 
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+  timeLineServer:
+    enabled: enabled
+    storageClass: local-path 
+    accessMode: ReadWriteOnce
+    size: 5Gi

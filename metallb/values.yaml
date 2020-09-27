@@ -1,0 +1,43 @@
+metallb:
+  enable: true
+
+  configInline:
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 192.168.1.200-192.168.1.210
+  controller:
+    image:
+      registry: docker.io
+      repository: metallb/controller
+      tag: v0.9.3
+    resources:
+        limits:
+          cpu: 110m
+          memory: 128Mi
+        requests:
+          memory: 128Mi
+          cpu: 100m
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: In
+                values:
+                - "true"
+  speaker:
+    image:
+      registry: docker.io
+      repository: metallb/speaker
+      tag: v0.9.3
+    resources:
+        limits:
+          cpu: 110m
+          memory: 128Mi
+        requests:
+          memory: 128Mi
+          cpu: 100m
+

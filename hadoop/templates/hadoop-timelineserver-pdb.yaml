@@ -1,0 +1,18 @@
+{{- if .Values.yarn.timeLineServer.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-timelineserver
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-timelineserver
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: yarn-timelineserver
+  minAvailable: {{ .Values.yarn.timeLineServer.pdbMinAvailable }}
+{{- end }}

@@ -1,0 +1,79 @@
+{{- if .Values.yarn.nodeManager.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-nodemanager
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-nodemanager
+spec:
+  serviceName: {{ include "hadoop.fullname" . }}-yarn-nodemanager
+  replicas: {{ .Values.yarn.nodeManager.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: yarn-nodemanager
+{{- if .Values.yarn.nodeManager.parallelCreate }}
+  podManagementPolicy: Parallel
+{{- end }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "hadoop.name" . }}
+        release: {{ .Release.Name }}
+        component: yarn-nodemanager
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hadoop.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: yarn-nodemanager
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hadoop.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: yarn-nodemanager
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: yarn-nodemanager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - containerPort: 8088
+          name: web
+        resources:
+{{ toYaml .Values.yarn.nodeManager.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /node
+            port: 8042
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /node
+            port: 8042
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "hadoop.fullname" . }}-configmap
+{{- end }}

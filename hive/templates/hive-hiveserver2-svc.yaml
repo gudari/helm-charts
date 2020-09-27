@@ -1,0 +1,21 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hive.fullname" . }}-hiveserver2
+  labels:
+    app: {{ include "hive.name" . }}
+    chart: {{ include "hive.chart" . }}
+    release: {{ .Release.Name }}
+    component: hiveserver2
+spec:
+  ports:
+  - name: thrift
+    port: 10000
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: {{ include "hive.name" . }}
+    release: {{ .Release.Name }}
+    component: hiveserver2

@@ -1,0 +1,12 @@
+Thank you for installing ZooKeeper on your Kubernetes cluster. More information
+about ZooKeeper can be found at https://zookeeper.apache.org/doc/current/
+
+Useful commands to check zookeeper status:
+
+kubectl -n {{ .Release.Namespace }} exec {{ include "zookeeper.fullname" . }}-zookeeper-0 -- zkServer.sh status
+
+kubectl -n {{ .Release.Namespace }} exec {{ include "zookeeper.fullname" . }}-zookeeper-0 -- sh -c "echo ruok | nc 127.0.0.1 {{ .Values.services.client.port }}"
+
+kubectl -n {{ .Release.Namespace }} exec -it {{ include "zookeeper.fullname" . }}-zookeeper-0 -- bash
+
+kubectl -n {{ .Release.Namespace }} exec -it {{ include "zookeeper.fullname" . }}-zookeeper-0 -- zkCli.sh

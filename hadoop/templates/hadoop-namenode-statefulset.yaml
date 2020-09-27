@@ -1,0 +1,111 @@
+{{- if .Values.hdfs.nameNode.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-namenode
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.hdfs.nameNode.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-namenode
+spec:
+  serviceName: {{ include "hadoop.fullname" . }}-hdfs-namenode
+  replicas: {{ .Values.hdfs.nameNode.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: hdfs-namenode
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.hdfs.nameNode.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      labels:
+        app: {{ include "hadoop.name" . }}
+        release: {{ .Release.Name }}
+        component: hdfs-namenode
+    spec:
+    {{- with .Values.hdfs.nameNode.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 8 }}
+    {{- end }}
+      affinity:
+    {{- if .Values.hdfs.nameNode.affinity }}
+{{ toYaml .Values.hdfs.nameNode.affinity | indent 8 }}
+    {{- end }}
+        {{- if eq .Values.hdfs.nameNode.antiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hadoop.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: hdfs-namenode
+        {{- else if eq .Values.hdfs.nameNode.antiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hadoop.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: hdfs-namenode
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: hdfs-namenode
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.hdfs.nameNode.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 50070
+          initialDelaySeconds: 90
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 50070
+          initialDelaySeconds: 90
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "hadoop.fullname" . }}-configmap
+{{- if .Values.persistence.nameNode.enabled }}
+        volumeMounts:
+        - name: dfs
+          mountPath: /hadoop/dfs/name
+  volumeClaimTemplates:
+  - metadata:
+      name: dfs
+    spec:
+      accessModes:
+        - {{ .Values.persistence.nameNode.accessMode | quote }}
+      resources:
+        requests:
+          # upstream recommended max is 700M
+          storage: {{ .Values.persistence.nameNode.size | quote }}
+    {{- if .Values.persistence.nameNode.storageClass }}
+    {{- if (eq "-" .Values.persistence.nameNode.storageClass) }}
+      storageClassName: ""
+    {{- else }}
+      storageClassName: "{{ .Values.persistence.nameNode.storageClass }}"
+    {{- end }}
+    {{- end }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+{{- end }}

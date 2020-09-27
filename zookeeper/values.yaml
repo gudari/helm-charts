@@ -1,0 +1,60 @@
+replicas: 1
+
+updateStrategy:
+  type: RollingUpdate
+
+image:
+  repository: gudari/zookeeper
+  tag: 3.6.1-arm64
+  pullPolicy: Always
+
+podAntiAffinity: "soft"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-slave-1"
+
+services:
+  client:
+    port: 2181
+    targetPort: 2181
+    protocol: TCP
+  server:
+    port: 2888
+    targetPort: 2888
+    protocol: TCP
+  election:
+    port: 3888
+    targetPort: 3888
+    protocol: TCP
+  console:
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+config: {}
+
+publishNotReadyAddresses: true
+
+persistence:
+  enabled: true
+  volumes:
+  - name: data
+    path: /data
+    accessMode: ReadWriteOnce
+    size: 5Gi
+  - name: datalog
+    path: /datalog
+    accessMode: ReadWriteOnce
+    size: 5Gi

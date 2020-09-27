@@ -1,0 +1,25 @@
+{{- if .Values.yarn.timeLineServer.enabled }}
+{{- if .Values.yarn.timeLineServer.enableIngress }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-timelineserver
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-timelineserver
+spec:
+  rules:
+  - host: timelineserver.192.168.1.151.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "hadoop.fullname" . }}-yarn-timelineserver
+          servicePort: web
+        path: /
+  tls:
+  - hosts:
+    - timelineserver.192.168.1.151.nip.io
+{{- end }}
+{{- end }}

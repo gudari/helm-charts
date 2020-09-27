@@ -1,0 +1,44 @@
+pihole:
+  enabled: true
+  image:
+    repository: "pihole/pihole"
+    tag: v5.1.1
+  serviceTCP:
+    type: LoadBalancer
+    loadBalancerIP: "192.168.1.201"
+    annotations:
+      metallb.universe.tf/allow-shared-ip: pihole-svc
+  serviceUDP:
+    type: LoadBalancer
+    loadBalancerIP: "192.168.1.201"
+    annotations:
+      metallb.universe.tf/allow-shared-ip: pihole-svc
+  ingress:
+    enabled: true
+    hosts:
+    - pihole.gudari.io
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    tls:
+    - secretName: pihole-tls
+      hosts:
+      - pihole.gudari.io
+  resources:
+    limits:
+     cpu: 250m
+     memory: 128Mi
+    requests:
+     cpu: 200m
+     memory: 128Mi
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "node-role.kubernetes.io/master"
+              operator: In
+              values:
+              - "true"
+  dnsmasq:
+    customDnsEntries:
+      - address=/.gudari.io/192.168.1.200

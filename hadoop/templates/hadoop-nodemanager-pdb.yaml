@@ -1,0 +1,18 @@
+{{- if .Values.yarn.nodeManager.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-nodemanager
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-nodemanager
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: yarn-nodemanager
+  minAvailable: {{ .Values.yarn.nodeManager.pdbMinAvailable }}
+{{- end }}

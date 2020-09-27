@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "spark.fullname" . }}-master
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/spark-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "spark.name" . }}
+    chart: {{ include "spark.chart" . }}
+    release: {{ .Release.Name }}
+    component: master
+spec:
+  serviceName: {{ include "spark.fullname" . }}-master
+  replicas: {{ .Values.master.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "spark.name" . }}
+      release: {{ .Release.Name }}
+      component: master
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/spark-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "spark.name" . }}
+        release: {{ .Release.Name }}
+        component: master
+    spec:
+      affinity:
+    {{- if .Values.master.affinity }}
+{{ toYaml .Values.master.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.master.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "spark.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: master
+        {{- else if eq .Values.master.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "spark.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: master
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: master
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.master.resources | indent 10 }}
+        ports:
+{{- range $key, $service := .Values.master.services }}
+        - name: {{ $key }}
+          containerPort: {{ $service.port }}
+{{- end }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.master.services.http.port }}
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.master.services.http.port }}
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "spark.fullname" . }}-configmap

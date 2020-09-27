@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hive.fullname" . }}-metastore
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hive-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "hive.name" . }}
+    chart: {{ include "hive.chart" . }}
+    release: {{ .Release.Name }}
+    component: metastore
+spec:
+  serviceName: {{ include "hive.fullname" . }}-metastore
+  replicas: {{ .Values.metastore.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hive.name" . }}
+      release: {{ .Release.Name }}
+      component: metastore
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hive-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "hive.name" . }}
+        release: {{ .Release.Name }}
+        component: metastore
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hive.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: metastore
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hive.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: metastore
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: metastore
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.metastore.resources | indent 10 }}
+        readinessProbe:
+          tcpSocket:
+            port: 9083
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+          tcpSocket:
+            port: 9083
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "hive.fullname" . }}-configmap
