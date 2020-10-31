@@ -3,7 +3,7 @@
 image:
   repository: gudari/spark
   tag: 3.0.0-arm64v8
-  pullPolicy: IfNotPresent #Always
+  pullPolicy: Always #Always
 
 # The version of the hadoop libraries being used in the image.
 sparkVersion: 3.0.0
@@ -128,3 +128,5 @@ config:
   HIVE_SITE_CONF_hive.metastore_schema_verification: "\"true\""
   HIVE_SITE_CONF_datanucleus_autoCreateSchema: "\"true\""
   HIVE_SITE_CONF_datanucleus_fixedDatastore: "\"true\""
+
+  SPARK_DEFAULT_CONF_spark_jars_packages: 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0'
