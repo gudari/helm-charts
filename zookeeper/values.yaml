@@ -6,7 +6,7 @@ updateStrategy:
 image:
   repository: gudari/zookeeper
   tag: 3.6.1-arm64
-  pullPolicy: Always
+  pullPolicy: ifNotPreset
 
 podAntiAffinity: "soft"
 affinity:
@@ -37,7 +37,13 @@ services:
     targetPort: 8080
     protocol: TCP
 
-resources: {}
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "350Mi"
+    cpu: "150m"
 
 nodeSelector: {}
 
