@@ -20,6 +20,13 @@ jupyterhub:
       tag: 0.9.0
     nodeSelector:
       kubernetes.io/hostname: rpi-slave-1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 350Mi
   auth:
     type: custom
     custom:
@@ -52,6 +59,13 @@ jupyterhub:
         tag: v2.2.4
     nodeSelector:
       kubernetes.io/hostname: rpi-slave-1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 350Mi
   singleuser:
     defaultUrl: "/lab"
     networkTools:
@@ -61,21 +75,64 @@ jupyterhub:
     image:
       name: gudari/jupyter-custom
       tag: 0.9.0
-      pullPolicy: Always
+    lifecycleHooks:
+      postStart:
+        exec:
+          command: [ "/usr/local/bin/start-notebook.d/init-hook.sh" ]
+    serviceAccountName: rpi-jupyterhub-serviceaccount
     extraEnv:
       PYSPARK_PYTHON: python3
       PYSPARK_DRIVER_PYTHON: python3
-      SPARK_OPTS: >-
-        --deploy-mode=client
-        --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
-        --conf spark.ui.reverseProxy=true
-        --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
-      PYSPARK_SUBMIT_ARGS: >-
-        --deploy-mode=client
-        --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
-        --conf spark.ui.reverseProxy=true
-        --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
-        pyspark-shell
+      #SPARK_OPTS: >-
+      #  --deploy-mode=client
+      #  --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
+      #  --conf spark.ui.reverseProxy=true
+      #  --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
+      #PYSPARK_SUBMIT_ARGS: >-
+      #  --deploy-mode=client
+      #  --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
+      #  --conf spark.ui.reverseProxy=true
+      #  --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
+      #  pyspark-shell
+      # CORE configurations
+      CORE_CONF_fs_defaultFS: hdfs://rpi-hadoop-hadoop-hdfs-namenode-0.rpi-hadoop-hadoop-hdfs-namenode.rpi-hadoop.svc.cluster.local:8020
+      CORE_CONF_hadoop_http_staticuser_user: root
+      CORE_CONF_hadoop_proxyuser_hue_hosts: '*'
+      CORE_CONF_hadoop_proxyuser_hue_groups: '*'
+      CORE_CONF_hadoop_proxyuser_root_hosts: '*'
+      CORE_CONF_hadoop_proxyuser_root_groups: '*'
+      CORE_CONF_hadoop_proxyuser_admin_hosts: '*'
+      CORE_CONF_hadoop_proxyuser_admin_groups: '*'
+      CORE_CONF_hadoop_http_cross___origin_enabled: "true"
+      CORE_CONF_hadoop_http_cross___origin_allowed___origins: "*"
+      CORE_CONF_hadoop_http_cross___origin_allowed___methods: PUT,GET,POST,HEAD,DELETE,OPTIONS
+      CORE_CONF_hadoop_http_cross___origin_allowed___headers: X-Requested-With,Content-Type,Accept,Origin
+      CORE_CONF_hadoop_http_cross___origin_max___age: "1800"
+
+      # HDFS configurations
+      HDFS_CONF_dfs_namenode_name_dir: file:///hadoop/dfs/name
+      HDFS_CONF_dfs_datanode_data_dir: file:///hadoop/dfs/data
+      HDFS_CONF_dfs_webhdfs_enabled: "true"
+      HDFS_CONF_dfs_permissions_enabled: "false"
+      HDFS_CONF_dfs_datanode_use_datanode_hostname: "false"
+      HDFS_CONF_dfs_client_use_datanode_hostname: "false"
+      HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: "false"
+      HDFS_CONF_dfs_datanode_http_address: 0.0.0.0:50075
+      HDFS_CONF_dfs_namenode_http___address: 0.0.0.0:50070
+      HDFS_CONF_dfs_hosts_exclude: /opt/hadoop/etc/hadoop/dfs.exclude
+      HDFS_CONF_dfs_namenode_heartbeat_recheck___interval: "150000"
+
+      # SPARK Configurations
+      SPARK_MASTER: spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
+      SPARK_DEFAULT_CONF_spark_master: spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
+      HIVE_SERVER2_TRANSPORT_MODE: 'binary'
+      HIVE_SERVER2_THRIFT_PORT: '10000'
+      HIVE_SERVER2_THRIFT_HTTP_PORT: '10001'
+      HIVE_SERVER2_AUTHENTICATION: 'NONE'
+      HIVE_SERVER2_ENABLE_DOAS: 'true'
+      SPARK_WORKER_CORES: "2"
+      SPARK_DEFAULT_CONF_spark_ui_reverseProxy: 'true'
+      SPARK_DEFAULT_CONF_spark_ui_reverseProxyUrl: 'https://spark.gudari.io/spark/'
     nodeSelector:
       kubernetes.io/hostname: rpi-slave-1
   scheduling:
@@ -96,4 +153,7 @@ jupyterhub:
     - hosts:
       - jupyterhub.gudari.io
       secretName: jupyterhub-tls
+
+  debug:
+    enabled: true
  
