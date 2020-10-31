@@ -50,6 +50,13 @@ jupyterhub:
       image:
         name: gudari/configurable-http-proxy
         tag: 4.2.1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 350Mi
     traefik:
       image:
         name: traefik
@@ -59,13 +66,6 @@ jupyterhub:
         tag: v2.2.4
     nodeSelector:
       kubernetes.io/hostname: rpi-slave-1
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 200m
-        memory: 350Mi
   singleuser:
     defaultUrl: "/lab"
     networkTools:
@@ -75,6 +75,12 @@ jupyterhub:
     image:
       name: gudari/jupyter-custom
       tag: 0.9.0
+    cpu:
+      limit: 0.6
+      guarantee: 0.5
+    memory:
+      limit: 1.5G
+      guarantee: 1G
     lifecycleHooks:
       postStart:
         exec:
