@@ -5,6 +5,8 @@ mongodb:
     repository: "arm64v8/mongo"
     tag: "4.2.9-bionic"
   
+  useStatefulSet: true
+  
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -14,7 +16,18 @@ mongodb:
               operator: In
               values:
               - "rpi-slave-1"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "200m"
+    limits:
+      memory: "1Gi"
+      cpu: "300m"
+  service:
+    type: LoadBalancer
+    loadBalancerIP: 192.168.1.203
   persistence:
-    enabled: false
+    enabled: true
     mountPath: /data/db
+    size: 5Gi
 
