@@ -2,7 +2,7 @@ pihole:
   enabled: true
   image:
     repository: "pihole/pihole"
-    tag: v5.1.1
+    tag: v5.1.2
   serviceTCP:
     type: LoadBalancer
     loadBalancerIP: "192.168.1.201"
@@ -42,3 +42,7 @@ pihole:
   dnsmasq:
     customDnsEntries:
       - address=/.gudari.io/192.168.1.200
+      - address=/elasticsearch.gudari.io/192.168.1.202
+      - address=/mongodb.gudari.io/192.168.1.203
+  whitelist:
+  - ads-serve.brave.com
