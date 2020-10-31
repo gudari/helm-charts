@@ -3,7 +3,7 @@
 image:
   repository: gudari/spark
   tag: 3.0.0-arm64v8
-  pullPolicy: Always #Always
+  pullPolicy: ifNotPreset #Always
 
 # The version of the hadoop libraries being used in the image.
 sparkVersion: 3.0.0
