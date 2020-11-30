@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cmak.fullname" . }}-cmak
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "cmak.name" . }}
+    chart: {{ include "cmak.chart" . }}
+    release: {{ .Release.Name }}
+    component: cmak
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ include "cmak.name" . }}
+      release: {{ .Release.Name }}
+      component: cmak
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "cmak.name" . }}
+        release: {{ .Release.Name }}
+        component: cmak
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "cmak.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: cmak
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "cmak.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: cmak
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: cmak
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - name: web
+          containerPort: 9000
+          protocol: TCP
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 9000
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 9000
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "cmak.fullname" . }}-configmap

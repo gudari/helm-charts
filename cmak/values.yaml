@@ -1,0 +1,47 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+enabled: true
+image:
+  repository: gudari/cmak
+  tag: 3.0.0.5-arm64
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+cmakVersion: 3.0.0.5
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "300m"
+  limits:
+    memory: "512Mi"
+    cpu: "320m"
+
+config:
+  ZK_HOSTS: rpi-zookeeper-zookeeper-0.rpi-zookeeper-zookeeper.rpi-zookeeper.svc.cluster.local:2181
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-slave-1"
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  path: /
+  hosts:
+  - cmak.gudari.io
+  extraPaths: []
+  tls:
+  - secretName: cmak-tls
+    hosts:
+    - cmak.gudari.io

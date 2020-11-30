@@ -1,0 +1,11 @@
+apiVersion: v1
+description: The Yahoo Cmak Version 4.7.1.
+name: cmak
+version: 0.0.1
+appVersion: 3.0.0.5
+home: https://github.com/yahoo/CMAK
+sources:
+- https://github.com/yahoo/CMAK
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

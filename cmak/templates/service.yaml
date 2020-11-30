@@ -1,0 +1,20 @@
+
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cmak.fullname" . }}-cmak
+  labels:
+    app: {{ include "cmak.name" . }}
+    chart: {{ include "cmak.chart" . }}
+    release: {{ .Release.Name }}
+    component: cmak-namenode
+spec:
+  ports:
+  - name: web
+    port: 9000
+    protocol: TCP
+  selector:
+    app: {{ include "cmak.name" . }}
+    release: {{ .Release.Name }}
+    component: cmak

@@ -1,0 +1,46 @@
+{{- if .Values.enabled }}
+{{- if .Values.ingress.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "cmak.fullname" . }}-cmak
+  labels:
+    app: {{ include "cmak.name" . }}
+    chart: {{ include "cmak.chart" . }}
+    release: {{ .Release.Name }}
+    component: cmak
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingress.tls }}
+  tls:
+{{ toYaml .Values.ingress.tls | indent 4 }}
+{{- end }}
+  rules:
+  {{- if .Values.ingress.hosts  }}
+  {{- range .Values.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+{{ if $.Values.ingress.extraPaths }}
+{{ toYaml $.Values.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - path: {{ $.Values.ingress.path }}
+        backend:
+          serviceName: {{ include "cmak.fullname" $ }}-cmak
+          servicePort: web
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "cmak.fullname" . }}-cmak
+          servicePort: web
+      {{- if $.Values.ingress.path }}
+        path: {{ $.Values.ingress.path }}
+      {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
