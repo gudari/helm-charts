@@ -23,6 +23,8 @@ data:
     CORE_CONF_hadoop_http_cross___origin_allowed___methods: PUT,GET,POST,HEAD,DELETE,OPTIONS
     CORE_CONF_hadoop_http_cross___origin_allowed___headers: X-Requested-With,Content-Type,Accept,Origin
     CORE_CONF_hadoop_http_cross___origin_max___age: "1800"
+    CORE_CONF_hadoop_proxyuser_nfsserver_groups: '*'
+    CORE_CONF_hadoop_proxyuser_nfsserver_hosts: '*'
 
     # HDFS configurations
     HDFS_CONF_dfs_namenode_name_dir: file:///hadoop/dfs/name
@@ -36,6 +38,9 @@ data:
     HDFS_CONF_dfs_namenode_http___address: 0.0.0.0:50070
     HDFS_CONF_dfs_hosts_exclude: /opt/hadoop/etc/hadoop/dfs.exclude
     HDFS_CONF_dfs_namenode_heartbeat_recheck___interval: "150000"
+    HDFS_CONF_dfs_namenode_accesstime_precision: '3600000'
+    HDFS_CONF_dfs_nfs3_dump_dir: "/tmp/.hdfs-nfs"
+    HDFS_CONF_dfs_nfs_exports_allowed_hosts: "* rw"
 
     # MAPDER configurations
     MAPRED_CONF_mapreduce_framework_name: yarn

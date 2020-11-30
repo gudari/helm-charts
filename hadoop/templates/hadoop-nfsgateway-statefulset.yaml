@@ -1,0 +1,75 @@
+{{- if .Values.hdfs.nfsGateway.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-nfsgateway
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-nfsgateway
+spec:
+  serviceName: {{ include "hadoop.fullname" . }}-hdfs-nfsgateway
+  replicas: {{ .Values.hdfs.nfsGateway.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: hdfs-nfsgateway
+{{- if .Values.hdfs.nfsGateway.parallelCreate }}
+  podManagementPolicy: Parallel
+{{- end }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "hadoop.name" . }}
+        release: {{ .Release.Name }}
+        component: hdfs-nfsgateway
+    spec:
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.hdfs.nfsGateway.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "hadoop.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: hdfs-nfsgateway
+        {{- else if eq .Values.hdfs.nfsGateway.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "hadoop.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: hdfs-nfsgateway
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: hdfs-nfsgateway
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.hdfs.nfsGateway.resources | indent 10 }}
+        ports:
+        {{- range $key, $service := .Values.hdfs.nfsGateway.serviceTCP.ports }}
+        - name: {{ $key }}
+          containerPort: {{ $service.targetPort }}
+          protocol: {{ $service.protocol }}
+      {{- end }}
+      {{- range $key, $service := .Values.hdfs.nfsGateway.serviceUDP.ports }}
+        - name: {{ $key }}
+          containerPort: {{ $service.targetPort }}
+          protocol: {{ $service.protocol }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "hadoop.fullname" . }}-configmap
+{{- end }}

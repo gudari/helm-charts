@@ -1,0 +1,37 @@
+{{- if .Values.hdfs.nfsGateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-nfsgateway-udp
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-nfsgateway
+{{- if .Values.hdfs.nfsGateway.serviceUDP.annotations }}
+  annotations:
+{{ toYaml .Values.hdfs.nfsGateway.serviceUDP.annotations | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.hdfs.nfsGateway.serviceUDP.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
+  type: {{ .Values.hdfs.nfsGateway.serviceUDP.type }}
+  {{- if .Values.hdfs.nfsGateway.serviceUDP.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.hdfs.nfsGateway.serviceUDP.loadBalancerIP }}
+  {{- end }}
+  {{- if or (eq .Values.hdfs.nfsGateway.serviceUDP.type "NodePort") (eq .Values.hdfs.nfsGateway.serviceUDP.type "LoadBalancer") }}
+  externalTrafficPolicy: {{ .Values.hdfs.nfsGateway.serviceUDP.externalTrafficPolicy }}
+  {{- end }}
+  ports:
+{{- range $key, $service := .Values.hdfs.nfsGateway.serviceUDP.ports }}
+  - name: {{ $key }}
+    port: {{ $service.port }}
+    targetPort: {{ $service.targetPort }}
+    protocol: {{ $service.protocol }}
+{{- end }}
+  selector:
+    app: {{ include "hadoop.name" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-nfsgateway
+{{- end }}

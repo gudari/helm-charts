@@ -1,0 +1,18 @@
+{{- if .Values.hdfs.nfsGateway.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-nfsgateway
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-nfsgateway
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: hdfs-nfsgateway
+  minAvailable: {{ .Values.hdfs.nfsGateway.pdbMinAvailable }}
+{{- end }}

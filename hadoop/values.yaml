@@ -2,8 +2,8 @@
 # See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
 image:
   repository: gudari/hadoop
-  tag: 3.2.1-arm64v8
-  pullPolicy: IfNotPresent #Always
+  tag: 3.2.1-arm64
+  pullPolicy: Always #Always
 
 # The version of the hadoop libraries being used in the image.
 hadoopVersion: 3.2.1
@@ -50,8 +50,6 @@ hdfs:
         kubernetes.io/tls-acme: "true"
         nginx.ingress.kubernetes.io/proxy-body-size: "0"
         nginx.ingress.kubernetes.io/enable-cors: "true"
-#        nginx.ingress.kubernetes.io/auth-url: https://auth0.gudari.io/oauth2/auth
-#        nginx.ingress.kubernetes.io/auth-signin: https://auth0.gudari.io/oauth2/start?rd=https://$host$request_uri
       path: /
       hosts:
       - hdfs.gudari.io
@@ -65,7 +63,7 @@ hdfs:
     enabled: true
     replicas: 2
     annotations: {}
-    antiAffinity: ""
+    antiAffinity: "soft"
     nodeSelector: {}
     affinity:
       nodeAffinity:
@@ -120,6 +118,67 @@ hdfs:
       - secretName: hdfs-tls
         domains:
         - gudari.io
+  nfsGateway:
+    enabled: true
+    replicas: 1
+    annotations: {}
+    antiAffinity: ""
+    nodeSelector: {}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-1"
+    pdbMinAvailable: 0
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "350m"
+      limits:
+        memory: "512Mi"
+        cpu: "400m"
+    serviceTCP:
+      type: LoadBalancer
+      externalTrafficPolicy: Local
+      loadBalancerIP: "192.168.1.204"
+      annotations:
+        metallb.universe.tf/allow-shared-ip: nfs-gateway
+      ports:
+        nfs-tcp:
+          port: 2049
+          targetPort: 2049
+          protocol: TCP
+        mountd-tcp:
+          port: 4242
+          targetPort: 4242
+          protocol: TCP
+        portmapper-tcp:
+          port: 111
+          targetPort: 111
+          protocol: TCP
+    serviceUDP:
+      type: LoadBalancer
+      externalTrafficPolicy: Local
+      loadBalancerIP: "192.168.1.204"
+      annotations:
+        metallb.universe.tf/allow-shared-ip: nfs-gateway
+      ports:
+        nfs-udp:
+          port: 2049
+          targetPort: 2049
+          protocol: UDP
+        mountd-udp:
+          port: 4242
+          targetPort: 4242
+          protocol: UDP
+        portmapper-udp:
+          port: 111
+          targetPort: 111
+          protocol: UDP
 
 mapred:
   historyServer:
