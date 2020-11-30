@@ -1,0 +1,32 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "nifi.fullname" . }}-nifi
+  labels:
+    app: {{ include "nifi.name" . }}
+    chart: {{ include "nifi.chart" . }}
+    release: {{ .Release.Name }}
+    component: nifi
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  rules:
+{{- range $host := .Values.ingress.hosts }}
+  - host: "{{ $host }}"
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "nifi.fullname" $ }}-nifi
+          servicePort: {{ $.Values.services.web.port }}
+        path: {{ $.Values.ingress.path }}
+{{- end }}
+{{- if .Values.ingress.tls }}
+  tls:
+  - hosts:
+  {{ toYaml .Values.ingress.hosts | indent 4 }}
+    secretName: {{ include "nifi.fullname" . }}-nifi
+{{- end }}
+{{- end }}

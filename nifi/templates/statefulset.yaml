@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "nifi.fullname" . }}-nifi
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "nifi.name" . }}
+    chart: {{ include "nifi.chart" . }}
+    release: {{ .Release.Name }}
+    component: nifi
+spec:
+  serviceName: {{ include "nifi.fullname" . }}-nifi
+  replicas: {{ .Values.replicas }}
+  updateStrategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ include "nifi.name" . }}
+      release: {{ .Release.Name }}
+      component: nifi
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "nifi.name" . }}
+        release: {{ .Release.Name }}
+        component: nifi
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.podAntiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "nifi.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: nifi
+        {{- else if eq .Values.podAntiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "nifi.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: nifi
+        {{- end }}
+      containers:
+      - name: nifi
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        command: ["/opt/nifi/bin/nifi.sh", "run"]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        ports:
+{{- range $key, $service := .Values.services }}
+        - name: {{ $key }}
+          containerPort: {{ $service.port }}
+{{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "nifi.fullname" . }}-configmap
+        volumeMounts:
+{{- range $volume := .Values.persistence.volumes }}
+        - name: {{ $volume.name }}
+          mountPath: {{ $volume.path }}
+{{- end }}
+{{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+{{- range $volume := .Values.persistence.volumes }}
+  - metadata:
+      name: {{ $volume.name }}
+    spec:
+      accessModes:
+        - {{ $volume.accessMode | quote }}
+      resources:
+        requests:
+          storage: {{ $volume.size | quote }}
+{{- if $volume.storageClass }}
+{{- if (eq "-" $volume.storageClass) }}
+      storageClassName: ""
+{{- else }}
+      storageClassName: "{{ $volume.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}
+{{- else }}
+      volumes:
+{{- range $volume := .Values.persistence.volumes }}
+      - name: {{ $volume.name }}
+        emptyDir: {}
+{{- end }}
+{{- end }}

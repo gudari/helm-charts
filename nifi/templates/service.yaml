@@ -1,0 +1,27 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nifi.fullname" . }}-nifi
+  labels:
+    app: {{ include "nifi.name" . }}
+    chart: {{ include "nifi.chart" . }}
+    release: {{ .Release.Name }}
+    component: nifi
+spec:
+  clusterIP: None
+{{- if .Values.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
+  ports:
+{{- range $key, $service := .Values.services }}
+    - name: {{ $key }}
+      port: {{ $service.port }}
+      targetPort: {{ $service.targetPort }}
+      protocol: {{ $service.protocol }}
+{{- end }}
+  selector:
+    app: {{ include "nifi.name" . }}
+    release: {{ .Release.Name }}
+    component: nifi

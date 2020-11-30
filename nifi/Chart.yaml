@@ -1,0 +1,12 @@
+apiVersion: v1
+description: The Apache nifi Version 1.12.1.
+name: nifi
+version: 1.12.1
+appVersion: 1.12.1
+home: https://nifi.apache.org/
+sources:
+- https://github.com/apache/nifi
+icon: https://nifi.apache.org/assets/images/apache-nifi-logo.svg
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

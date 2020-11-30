@@ -1,0 +1,2 @@
+Thank you for installing ZooKeeper on your Kubernetes cluster. More information
+about ZooKeeper can be found at https://zookeeper.apache.org/doc/current/

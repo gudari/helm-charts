@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nifi.fullname" . }}-configmap
+  labels:
+    app: {{ include "nifi.name" . }}
+    chart: {{ include "nifi.chart" . }}
+    release: {{ .Release.Name }}
+data:
+
+{{- range $key, $value := .Values.config }}
+  {{ $key}}: {{ $value }}
+{{- end }}
+
