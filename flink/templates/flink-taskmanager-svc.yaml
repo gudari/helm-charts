@@ -1,0 +1,24 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flink.fullname" . }}-taskmanager
+  labels:
+    app: {{ include "flink.name" . }}
+    chart: {{ include "flink.chart" . }}
+    release: {{ .Release.Name }}
+    component: taskmanager
+spec:
+  ports:
+{{- range $key, $service := .Values.taskmanager.services }}
+    - name: {{ $key }}
+      port: {{ $service.port }}
+      targetPort: {{ $service.targetPort }}
+      protocol: {{ $service.protocol }}
+{{- end }}
+  clusterIP: None
+  selector:
+    app: {{ include "flink.name" . }}
+    release: {{ .Release.Name }}
+    component: taskmanager

@@ -1,0 +1,44 @@
+{{- if .Values.jobmanager.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "flink.fullname" . }}-jobmanager
+  labels:
+    app: {{ include "flink.name" . }}
+    chart: {{ include "flink.chart" . }}
+    release: {{ .Release.Name }}
+    component: jobmanager
+{{- with .Values.jobmanager.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.jobmanager.ingress.tls }}
+  tls:
+{{ toYaml .Values.jobmanager.ingress.tls | indent 4 }}
+{{- end }}
+  rules:
+  {{- if .Values.jobmanager.ingress.hosts  }}
+  {{- range .Values.jobmanager.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+{{ if $.Values.jobmanager.ingress.extraPaths }}
+{{ toYaml $.Values.jobmanager.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - path: {{ $.Values.jobmanager.ingress.path }}
+        backend:
+          serviceName: {{ include "flink.fullname" $ }}-jobmanager
+          servicePort: {{ $.Values.jobmanager.services.http.port }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "flink.fullname" $ }}-jobmanager
+          servicePort: {{ $.Values.jobmanager.services.http.port }}
+          {{- if $.Values.jobmanager.ingress.path }}
+            path: {{ $.Values.jobmanager.ingress.path }}
+          {{- end }}
+{{- end }}
+{{- end }}

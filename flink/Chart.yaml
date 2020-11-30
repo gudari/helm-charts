@@ -1,0 +1,12 @@
+apiVersion: v2
+description: The Apache Flink Version 1.11.2.
+name: flink
+version: 1.11.2
+appVersion: 1.11.2
+home: https://flink.apache.org/
+sources:
+- https://github.com/apache/flink
+icon: https://flink.apache.org/img/flink-header-logo.svg
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

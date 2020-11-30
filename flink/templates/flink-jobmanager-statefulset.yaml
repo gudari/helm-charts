@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "flink.fullname" . }}-jobmanager
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/flink-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "flink.name" . }}
+    chart: {{ include "flink.chart" . }}
+    release: {{ .Release.Name }}
+    component: jobmanager
+spec:
+  serviceName: {{ include "flink.fullname" . }}-jobmanager
+  replicas: {{ .Values.jobmanager.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "flink.name" . }}
+      release: {{ .Release.Name }}
+      component: jobmanager
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/flink-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "flink.name" . }}
+        release: {{ .Release.Name }}
+        component: jobmanager
+    spec:
+      affinity:
+    {{- if .Values.jobmanager.affinity }}
+{{ toYaml .Values.jobmanager.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.jobmanager.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "flink.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: jobmanager
+        {{- else if eq .Values.jobmanager.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "flink.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: jobmanager
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: jobmanager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.jobmanager.resources | indent 10 }}
+        ports:
+{{- range $key, $service := .Values.jobmanager.services }}
+        - name: {{ $key }}
+          containerPort: {{ $service.port }}
+{{- end }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.jobmanager.services.http.port }}
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.jobmanager.services.http.port }}
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "flink.fullname" . }}-configmap
+{{- if .Values.jobmanager.persistence.enabled }}
+        volumeMounts:
+        - name: dfs
+          mountPath: {{ .Values.jobmanager.persistence.web.mountPath | quote }}
+  volumeClaimTemplates:
+  - metadata:
+      name: dfs
+    spec:
+      accessModes:
+        - {{ .Values.jobmanager.persistence.web.accessMode | quote }}
+      resources:
+        requests:
+          storage: {{ .Values.jobmanager.persistence.web.size | quote }}
+    {{- if .Values.jobmanager.persistence.web.storageClass }}
+    {{- if (eq "-" .Values.jobmanager.persistence.web.storageClass) }}
+      storageClassName: ""
+    {{- else }}
+      storageClassName: "{{ .Values.jobmanager.persistence.web.storageClass }}"
+    {{- end }}
+    {{- end }}
+      {{- else }}
+      volumes:
+        - name: dfs
+          emptyDir: {}
+{{- end }}

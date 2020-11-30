@@ -1,0 +1,86 @@
+# The base spark image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+image:
+  repository: gudari/flink
+  tag: 1.11.2-arm64
+  pullPolicy: Always #Always
+
+# The version of the hadoop libraries being used in the image.
+flinkVersion: 1.11.2
+
+jobmanager:
+  replicas: 1
+  pdbMinAvailable: 0
+  antiAffinity: "soft"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+  services:
+    http:
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+    rpc:
+      port: 6123
+      targetPort: 6123
+      protocol: TCP
+  resources:
+    requests:
+      memory: "1024Mi"
+      cpu: "0.5"
+    limits:
+      memory: "1024Mi"
+      cpu: "0.5"
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+    path: /
+    hosts:
+    - flink.gudari.io
+    extraPaths: []
+    tls:
+    - secretName: flink-tls
+      hosts:
+      - flink.gudari.io
+  persistence:
+    enabled: true
+    web:
+      mountPath: /opt/flink/webArtifacts
+      accessMode: ReadWriteOnce
+      size: 1Gi
+
+taskmanager:
+  replicas: 2
+  pdbMinAvailable: 0
+  antiAffinity: "hard"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-2"
+              - "rpi-slave-3"
+  services:
+    data:
+      port: 36300
+      targetPort: 36300
+      protocol: TCP
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "0.5"
+    limits:
+      memory: "1Gi"
+      cpu: "0.5"

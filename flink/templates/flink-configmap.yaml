@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "flink.fullname" . }}-configmap
+  labels:
+    app: {{ include "flink.name" . }}
+    chart: {{ include "flink.chart" . }}
+    release: {{ .Release.Name }}
+data:
+  FLINK_CONF_YAML_jobmanager_rpc_address: {{ include "flink.fullname" . }}-jobmanager-0.{{ include "flink.fullname" . }}-jobmanager.{{ .Release.Namespace }}.svc.cluster.local
+  FLINK_CONF_YAML_jobmanager_rpc_port: "{{ .Values.jobmanager.services.rpc.port }}"
+  FLINK_CONF_YAML_jobmanager_rest_address: "{{ index .Values.jobmanager.ingress.hosts 0 }}"
+  FLINK_CONF_YAML_jobmanager_heap_size: 1024m
+  FLINK_CONF_YAML_taskmanager_memory_process_size: 1568m
+  FLINK_CONF_YAML_taskmanager_numberOfTaskSlots: "5"
+  FLINK_CONF_YAML_parallelism_default: "1"
+  FLINK_CONF_YAML_jobmanager_execution_failover___strategy: region
+  FLINK_CONF_YAML_taskmanager_data_port: "{{ .Values.taskmanager.services.data.port }}"
+  {{- if .Values.jobmanager.persistence.enabled }}
+  FLINK_CONF_YAML_web_upload_dir: "{{ .Values.jobmanager.persistence.web.mountPath }}"
+  {{- end }}
+
+{{- range $key, $value := .Values.config }}
+  {{ $key }}: {{ $value }}
+{{- end }}

@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "flink.fullname" . }}-taskmanager
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/flink-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "flink.name" . }}
+    chart: {{ include "flink.chart" . }}
+    release: {{ .Release.Name }}
+    component: taskmanager
+spec:
+  serviceName: {{ include "flink.fullname" . }}-taskmanager
+  replicas: {{ .Values.taskmanager.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "flink.name" . }}
+      release: {{ .Release.Name }}
+      component: taskmanager
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/flink-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "flink.name" . }}
+        release: {{ .Release.Name }}
+        component: taskmanager
+    spec:
+      affinity:
+    {{- if .Values.taskmanager.affinity }}
+{{ toYaml .Values.taskmanager.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.taskmanager.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "flink.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: taskmanager
+        {{- else if eq .Values.flink.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "flink.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: taskmanager
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: taskmanager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.taskmanager.resources | indent 10 }}
+        ports:
+{{- range $key, $service := .Values.taskmanager.services }}
+        - name: {{ $key }}
+          containerPort: {{ $service.port }}
+{{- end }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.taskmanager.services.data.port }}
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.taskmanager.services.data.port }}
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "flink.fullname" . }}-configmap
