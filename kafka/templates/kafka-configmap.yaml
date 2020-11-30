@@ -25,3 +25,7 @@ data:
   SERVER_PROPERTIES_zookeeper_connect: rpi-zookeeper-zookeeper-0.rpi-zookeeper-zookeeper.rpi-zookeeper.svc.cluster.local:2181
   SERVER_PROPERTIES_zookeeper_connection_timeout_ms: "6000"
   SERVER_PROPERTIES_group_initial_rebalance_delay_ms: "0"
+  SERVER_PROPERTIES_inter_broker_listener_name: INTERNAL
+  SERVER_PROPERTIES_listeners: INTERNAL://:9092,EXTERNAL://:31090
+  SERVER_PROPERTIES_advertised_listeners: EXTERNAL://kafka.gudari.io:31090,INTERNAL://rpi-kafka-kafka-broker-0.rpi-kafka-kafka-broker.rpi-kafka.svc.cluster.local:9092
+  SERVER_PROPERTIES_listener_security_protocol_map: INTERNAL:PLAINTEXT, EXTERNAL:PLAINTEXT
