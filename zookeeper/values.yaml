@@ -6,7 +6,7 @@ updateStrategy:
 image:
   repository: gudari/zookeeper
   tag: 3.6.1-arm64
-  pullPolicy: ifNotPreset
+  pullPolicy: IfNotPresent
 
 podAntiAffinity: "soft"
 affinity:
@@ -39,11 +39,11 @@ services:
 
 resources:
   requests:
-    memory: "256Mi"
-    cpu: "100m"
+    memory: "512Mi"
+    cpu: "300m"
   limits:
-    memory: "350Mi"
-    cpu: "150m"
+    memory: "600Mi"
+    cpu: "350m"
 
 nodeSelector: {}
 

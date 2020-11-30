@@ -3,7 +3,7 @@
 image:
   repository: gudari/spark
   tag: 3.0.0-arm64v8
-  pullPolicy: ifNotPreset #Always
+  pullPolicy: IfNotPresent #Always
 
 # The version of the hadoop libraries being used in the image.
 sparkVersion: 3.0.0
@@ -32,7 +32,7 @@ master:
       protocol: TCP
   resources:
     requests:
-      memory: "512Mi"
+      memory: "1024Mi"
       cpu: "0.5"
     limits:
       memory: "1024Mi"

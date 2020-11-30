@@ -79,8 +79,8 @@ jupyterhub:
       limit: 0.6
       guarantee: 0.5
     memory:
-      limit: 1.5G
-      guarantee: 1G
+      limit: 2G
+      guarantee: 2G
     lifecycleHooks:
       postStart:
         exec:
@@ -89,17 +89,6 @@ jupyterhub:
     extraEnv:
       PYSPARK_PYTHON: python3
       PYSPARK_DRIVER_PYTHON: python3
-      #SPARK_OPTS: >-
-      #  --deploy-mode=client
-      #  --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
-      #  --conf spark.ui.reverseProxy=true
-      #  --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
-      #PYSPARK_SUBMIT_ARGS: >-
-      #  --deploy-mode=client
-      #  --master spark://rpi-spark-spark-master-0.rpi-spark-spark-master.rpi-spark.svc.cluster.local:7077
-      #  --conf spark.ui.reverseProxy=true
-      #  --conf spark.ui.reverseProxyUrl=https://spark.gudari.io/spark/
-      #  pyspark-shell
       # CORE configurations
       CORE_CONF_fs_defaultFS: hdfs://rpi-hadoop-hadoop-hdfs-namenode-0.rpi-hadoop-hadoop-hdfs-namenode.rpi-hadoop.svc.cluster.local:8020
       CORE_CONF_hadoop_http_staticuser_user: root
