@@ -1,0 +1,47 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+enabled: true
+image:
+  repository: gudari/mlflow
+  tag: 1.12.1-arm64
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+mlflowVersion: 1.12.1
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "700m"
+  limits:
+    memory: "1Gi"
+    cpu: "700m"
+
+config:
+  MLFLOW_HOST: "0.0.0.0"
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-master"
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  path: ""
+  hosts:
+  - mlflow.gudari.io
+  extraPaths: []
+  tls:
+  - secretName: mlflow-tls
+    hosts:
+    - mlflow.gudari.io

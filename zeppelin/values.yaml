@@ -1,0 +1,47 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+enabled: true
+image:
+  repository: gudari/zeppelin
+  tag: 0.9.0-preview2-arm64
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+mlflowVersion: 0.9.0-preview2
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "700m"
+  limits:
+    memory: "1Gi"
+    cpu: "700m"
+
+config:
+  ZEPPELIN_SITE_XML_zeppelin_server_addr: 0.0.0.0
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-master"
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  path: ""
+  hosts:
+  - zeppelin.gudari.io
+  extraPaths: []
+  tls:
+  - secretName: zeppelin-tls
+    hosts:
+    - zeppelin.gudari.io

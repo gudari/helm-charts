@@ -1,0 +1,11 @@
+apiVersion: v1
+description: The Apache Airflow Version 4.7.1.
+name: airflow
+version: 0.0.1
+appVersion: 1.10.13
+home: https://github.com/apache/airflow
+sources:
+- https://airflow.apache.org/
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

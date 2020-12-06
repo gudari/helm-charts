@@ -6,7 +6,7 @@ updateStrategy:
 image:
   repository: gudari/nifi
   tag: 1.12.1-arm64
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 podAntiAffinity: "soft"
 affinity:
@@ -25,13 +25,13 @@ services:
     targetPort: 8080
     protocol: TCP
 
-resources: {}
-#  requests:
-#    memory: "1Gi"
-#    cpu: "0.6"
-#  limits:
-#    memory: "2Gi"
-#    cpu: "0.8"
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "0.5"
+  limits:
+    memory: "1Gi"
+    cpu: "0.5"
 
 nodeSelector: {}
 

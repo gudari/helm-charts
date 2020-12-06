@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "airflow.fullname" . }}-airflow
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "airflow.name" . }}
+    chart: {{ include "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    component: airflow
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ include "airflow.name" . }}
+      release: {{ .Release.Name }}
+      component: airflow
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "airflow.name" . }}
+        release: {{ .Release.Name }}
+        component: airflow
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "airflow.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: airflow
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "airflow.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: airflow
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: airflow
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - name: web
+          containerPort: 8080
+          protocol: TCP
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: "/health"
+            port: 8080
+          initialDelaySeconds: 120
+          timeoutSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: "/health"
+            port: 8080
+          initialDelaySeconds: 120
+          timeoutSeconds: 10
+        envFrom:
+        - configMapRef:
+            name: {{ include "airflow.fullname" . }}-configmap

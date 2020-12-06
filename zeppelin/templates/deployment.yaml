@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zeppelin.fullname" . }}-zeppelin
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "zeppelin.name" . }}
+    chart: {{ include "zeppelin.chart" . }}
+    release: {{ .Release.Name }}
+    component: zeppelin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ include "zeppelin.name" . }}
+      release: {{ .Release.Name }}
+      component: zeppelin
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "zeppelin.name" . }}
+        release: {{ .Release.Name }}
+        component: zeppelin
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "zeppelin.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: zeppelin
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "zeppelin.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: zeppelin
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: zeppelin
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - name: web
+          containerPort: 8080
+          protocol: TCP
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: "/api/version"
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/api/version"
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+        envFrom:
+        - configMapRef:
+            name: {{ include "zeppelin.fullname" . }}-configmap

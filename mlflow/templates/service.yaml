@@ -1,0 +1,20 @@
+
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mlflow.fullname" . }}-mlflow
+  labels:
+    app: {{ include "mlflow.name" . }}
+    chart: {{ include "mlflow.chart" . }}
+    release: {{ .Release.Name }}
+    component: mlflow
+spec:
+  ports:
+  - name: web
+    port: 5000
+    protocol: TCP
+  selector:
+    app: {{ include "mlflow.name" . }}
+    release: {{ .Release.Name }}
+    component: mlflow
