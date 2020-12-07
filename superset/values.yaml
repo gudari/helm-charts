@@ -1,0 +1,46 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+enabled: true
+image:
+  repository: gudari/superset
+  tag: 0.38.0-arm64
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+supersetVersion: 0.38.0
+
+resources:
+  requests:
+    memory: "1024Mi"
+    cpu: "800m"
+  limits:
+    memory: "1024Mi"
+    cpu: "800m"
+
+config: {}
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-master"
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  path: ""
+  hosts:
+  - superset.gudari.io
+  extraPaths: []
+  tls:
+  - secretName: superset-tls
+    hosts:
+    - superset.gudari.io
