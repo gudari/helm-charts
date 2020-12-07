@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "storm.fullname" . }}-ui
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/storm-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "storm.name" . }}
+    chart: {{ include "storm.chart" . }}
+    release: {{ .Release.Name }}
+    component: ui
+spec:
+  serviceName: {{ include "storm.fullname" . }}-ui
+  replicas: {{ .Values.ui.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "storm.name" . }}
+      release: {{ .Release.Name }}
+      component: ui
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/storm-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "storm.name" . }}
+        release: {{ .Release.Name }}
+        component: ui
+    spec:
+      affinity:
+    {{- if .Values.ui.affinity }}
+{{ toYaml .Values.ui.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.ui.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "storm.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: ui
+        {{- else if eq .Values.ui.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "storm.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: ui
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: ui
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.ui.resources | indent 10 }}
+        ports:
+{{- range $key, $service := .Values.ui.services }}
+        - name: {{ $key }}
+          containerPort: {{ $service.port }}
+{{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "storm.fullname" . }}-configmap

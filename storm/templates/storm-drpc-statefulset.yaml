@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "storm.fullname" . }}-drpc
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/storm-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "storm.name" . }}
+    chart: {{ include "storm.chart" . }}
+    release: {{ .Release.Name }}
+    component: drpc
+spec:
+  serviceName: {{ include "storm.fullname" . }}-drpc
+  replicas: {{ .Values.drpc.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "storm.name" . }}
+      release: {{ .Release.Name }}
+      component: drpc
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/storm-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "storm.name" . }}
+        release: {{ .Release.Name }}
+        component: drpc
+    spec:
+      affinity:
+    {{- if .Values.drpc.affinity }}
+{{ toYaml .Values.drpc.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.drpc.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "storm.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: drpc
+        {{- else if eq .Values.drpc.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "storm.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: drpc
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: drpc
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.drpc.resources | indent 10 }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "storm.fullname" . }}-configmap

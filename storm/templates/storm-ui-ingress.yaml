@@ -1,0 +1,44 @@
+{{- if .Values.ui.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "storm.fullname" . }}-ui
+  labels:
+    app: {{ include "storm.name" . }}
+    chart: {{ include "storm.chart" . }}
+    release: {{ .Release.Name }}
+    component: ui
+{{- with .Values.ui.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ui.ingress.tls }}
+  tls:
+{{ toYaml .Values.ui.ingress.tls | indent 4 }}
+{{- end }}
+  rules:
+  {{- if .Values.ui.ingress.hosts  }}
+  {{- range .Values.ui.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+{{ if $.Values.ui.ingress.extraPaths }}
+{{ toYaml $.Values.ui.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - path: {{ $.Values.ui.ingress.path }}
+        backend:
+          serviceName: {{ include "storm.fullname" $ }}-ui
+          servicePort: {{ $.Values.ui.services.http.port }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "storm.fullname" $ }}-ui
+          servicePort: {{ $.Values.ui.services.http.port }}
+          {{- if $.Values.ui.ingress.path }}
+            path: {{ $.Values.ui.ingress.path }}
+          {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,24 @@
+
+# A headless service to create datanodeS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "storm.fullname" . }}-ui
+  labels:
+    app: {{ include "storm.name" . }}
+    chart: {{ include "storm.chart" . }}
+    release: {{ .Release.Name }}
+    component: ui
+spec:
+  ports:
+{{- range $key, $service := .Values.ui.services }}
+    - name: {{ $key }}
+      port: {{ $service.port }}
+      targetPort: {{ $service.targetPort }}
+      protocol: {{ $service.protocol }}
+{{- end }}
+  clusterIP: None
+  selector:
+    app: {{ include "storm.name" . }}
+    release: {{ .Release.Name }}
+    component: ui

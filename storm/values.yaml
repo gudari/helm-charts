@@ -1,0 +1,125 @@
+# The base storm image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+image:
+  repository: gudari/storm
+  tag: 2.2.0-arm64
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+stormVersion: 2.2.0
+
+ui:
+  replicas: 1
+  pdbMinAvailable: 0
+  antiAffinity: "soft"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+              - "rpi-slave-2"
+              - "rpi-slave-3"
+  services:
+    http:
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "400m"
+    limits:
+      memory: "512Mi"
+      cpu: "400m"
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    path: /
+    hosts:
+    - storm.gudari.io
+    extraPaths: []
+    tls:
+    - secretName: storm-tls
+      hosts:
+      - storm.gudari.io
+
+nimbus:
+  replicas: 1
+  pdbMinAvailable: 0
+  antiAffinity: "soft"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+              - "rpi-slave-2"
+              - "rpi-slave-3"
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "400m"
+    limits:
+      memory: "512Mi"
+      cpu: "400m"
+
+supervisor:
+  replicas: 1
+  pdbMinAvailable: 0
+  antiAffinity: "soft"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+              - "rpi-slave-2"
+              - "rpi-slave-3"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "0.5"
+    limits:
+      memory: "1Gi"
+      cpu: "0.5"
+
+drpc:
+  replicas: 0
+  pdbMinAvailable: 0
+  antiAffinity: "soft"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-1"
+              - "rpi-slave-2"
+              - "rpi-slave-3"
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "400m"
+    limits:
+      memory: "512Mi"
+      cpu: "400m"
+
+config:
+  STORM_YAML_storm_zookeeper_servers: rpi-zookeeper-zookeeper-0.rpi-zookeeper-zookeeper.rpi-zookeeper.svc.cluster.local
+  STORM_YAML_nimbus_seeds: rpi-storm-storm-nimbus-0.rpi-storm-storm-nimbus.rpi-storm.svc.cluster.local
+  STORM_YAML_drpc_servers: rpi-storm-storm-drpc-0.rpi-storm-storm-drpc.rpi-storm.svc.cluster.local
+  

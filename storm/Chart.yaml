@@ -1,0 +1,12 @@
+apiVersion: v1
+description: The Apache Storm Version 2.2.0.
+name: storm
+version: 0.0.1
+appVersion: 2.2.0
+home: https://storm.apache.org/
+sources:
+- https://github.com/apache/storm
+icon: https://spark.apache.org/images/spark-logo-trademark.png
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com
