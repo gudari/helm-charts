@@ -20,6 +20,8 @@ spec:
       component: yarn-resourcemanager
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
       labels:
         app: {{ include "hadoop.name" . }}
         release: {{ .Release.Name }}
@@ -27,7 +29,7 @@ spec:
     spec:
       affinity:
         podAntiAffinity:
-        {{- if eq .Values.antiAffinity "hard" }}
+        {{- if eq .Values.yarn.resourceManager.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -35,7 +37,7 @@ spec:
                 app:  {{ include "hadoop.name" . }}
                 release: {{ .Release.Name | quote }}
                 component: yarn-resourcemanager
-        {{- else if eq .Values.antiAffinity "soft" }}
+        {{- else if eq .Values.yarn.resourceManager.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:

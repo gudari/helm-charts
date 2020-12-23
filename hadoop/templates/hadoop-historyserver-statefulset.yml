@@ -29,7 +29,7 @@ spec:
     spec:
       affinity:
         podAntiAffinity:
-        {{- if eq .Values.antiAffinity "hard" }}
+        {{- if eq .Values.mapred.historyServer.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -37,7 +37,7 @@ spec:
                 app:  {{ include "hadoop.name" . }}
                 release: {{ .Release.Name | quote }}
                 component: mapred-historyserver
-        {{- else if eq .Values.antiAffinity "soft" }}
+        {{- else if eq .Values.mapred.historyServer.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
@@ -51,7 +51,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: mapred-historyserver
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.mapred.historyServer.image.repository }}:{{ .Values.mapred.historyServer.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.mapred.historyServer.resources | indent 10 }}

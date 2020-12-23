@@ -119,8 +119,8 @@ hdfs:
         domains:
         - gudari.io
   nfsGateway:
-    enabled: true
-    replicas: 1
+    enabled: false
+    replicas: 0
     annotations: {}
     antiAffinity: ""
     nodeSelector: {}
@@ -182,7 +182,12 @@ hdfs:
 
 mapred:
   historyServer:
-    enabled: false
+    enabled: true
+    image:
+      repository: gudari/tez-hadoop
+      tag: 0.10.0-arm64
+      pullPolicy: Always
+    antiAffinity: "soft"
     replicas: 1
     pdbMinAvailable: 0
     resources:
@@ -193,12 +198,13 @@ mapred:
         memory: "512Mi"
         cpu: "500m"
     
-    enableIngress: false
+    enableIngress: true
 
 
 yarn:
   resourceManager:
-    enabled: false
+    enabled: true
+    antiAffinity: "soft"
     replicas: 1
     pdbMinAvailable: 0
 
@@ -210,23 +216,42 @@ yarn:
         memory: "512Mi"
         cpu: "500m"
 
-    enableIngress: false
+    enableIngress: true
 
   nodeManager:
-    enabled: false
+    enabled: true
+    image:
+      repository: gudari/tez-hadoop
+      tag: 0.10.0-arm64
+      pullPolicy: Always
+    antiAffinity: "soft"
     replicas: 1
     pdbMinAvailable: 0
-
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-2"
+                - "rpi-slave-3"
     resources:
       requests:
         memory: "2048Mi"
         cpu: "500m"
       limits:
         memory: "2048Mi"
-        cpu: "500m"
+        cpu: "520m"
 
   timeLineServer:
-    enabled: false
+    enabled: true
+    image:
+      repository: gudari/tez-hadoop
+      tag: 0.10.0-arm64
+      pullPolicy: Always
+    antiAffinity: "soft"
     replicas: 1
     pdbMinAvailable: 0
 
@@ -235,12 +260,35 @@ yarn:
     resources:
       requests:
         memory: "512Mi"
-        cpu: "400m"
+        cpu: "420m"
       limits:
         memory: "512Mi"
         cpu: "450m"
 
-    enableIngress: false
+    enableIngress: true
+
+tez:
+  ui:
+    enabled: true
+    image:
+      repository: gudari/tez-ui
+      tag: 0.10.0-arm64
+      pullPolicy: Always
+    antiAffinity: "soft"
+    replicas: 1
+    pdbMinAvailable: 0
+
+    # CPU and memory resources allocated to each node manager pod.
+    # This should be tuned to fit your workload.
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "420m"
+      limits:
+        memory: "512Mi"
+        cpu: "450m"
+
+    enableIngress: true
 
 persistence:
   nameNode:

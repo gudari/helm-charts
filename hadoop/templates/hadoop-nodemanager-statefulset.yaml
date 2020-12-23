@@ -31,8 +31,11 @@ spec:
         component: yarn-nodemanager
     spec:
       affinity:
+    {{- if .Values.yarn.nodeManager.affinity }}
+{{ toYaml .Values.yarn.nodeManager.affinity | indent 8 }}
+    {{- end }}
         podAntiAffinity:
-        {{- if eq .Values.antiAffinity "hard" }}
+        {{- if eq .Values.yarn.nodeManager.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -40,7 +43,7 @@ spec:
                 app:  {{ include "hadoop.name" . }}
                 release: {{ .Release.Name | quote }}
                 component: yarn-nodemanager
-        {{- else if eq .Values.antiAffinity "soft" }}
+        {{- else if eq .Values.yarn.nodeManager.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
@@ -54,7 +57,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: yarn-nodemanager
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.yarn.nodeManager.image.repository }}:{{ .Values.yarn.nodeManager.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         ports:
         - containerPort: 8088

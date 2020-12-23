@@ -11,7 +11,7 @@ metadata:
     component: yarn-timelineserver
 spec:
   rules:
-  - host: timelineserver.192.168.1.151.nip.io
+  - host: timelineserver.gudari.io
     http:
       paths:
       - backend:
@@ -20,6 +20,6 @@ spec:
         path: /
   tls:
   - hosts:
-    - timelineserver.192.168.1.151.nip.io
+    - timelineserver.gudari.io
 {{- end }}
 {{- end }}

@@ -11,7 +11,7 @@ metadata:
     component: yarn-resourcemanager
 spec:
   rules:
-  - host: resourcemanager.192.168.1.151.nip.io
+  - host: resourcemanager.gudari.io
     http:
       paths:
       - backend:
@@ -20,6 +20,6 @@ spec:
         path: /
   tls:
   - hosts:
-    - resourcemanager.192.168.1.151.nip.io
+    - resourcemanager.gudari.io
 {{- end }}
 {{- end }}

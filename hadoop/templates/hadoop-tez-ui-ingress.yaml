@@ -2,22 +2,22 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ include "hadoop.fullname" . }}-mapred-historyserver
+  name: {{ include "hadoop.fullname" . }}-tez-ui
   labels:
     app: {{ include "hadoop.name" . }}
     chart: {{ include "hadoop.chart" . }}
     release: {{ .Release.Name }}
-    component: mapred-historyserver
+    component: tez-ui
 spec:
   rules:
-  - host: historyserver.gudari.io
+  - host: tez-ui.gudari.io
     http:
       paths:
       - backend:
-          serviceName: {{ include "hadoop.fullname" . }}-mapred-historyserver
+          serviceName: {{ include "hadoop.fullname" . }}-tez-ui
           servicePort: web
         path: /
   tls:
   - hosts:
-    - historyserver.gudari.io
+    - tez-ui.gudari.io
 {{- end -}}
