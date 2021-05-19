@@ -1,17 +1,15 @@
 apiVersion: v2
-description: Provides easy monitoring definitions for Kubernetes services, and deployment and management of Prometheus instances.
-icon: https://raw.githubusercontent.com/prometheus/prometheus.github.io/master/assets/prometheus_logo-cb55bb5c346.png
+description: Network-wide Ad Blocking.
+icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2018/12/pihole-text-logo-white.png.webp
 engine: gotpl
 name: pi-hole
 sources:
-  - https://github.com/coreos/kube-prometheus
-  - https://github.com/coreos/prometheus-operator
-  - https://coreos.com/operators/prometheus
-version: 1.7.17
+  - https://github.com/pi-hole/pi-hole
+version: 1.8.34
 appVersion: 5.1.2
-home: https://github.com/coreos/prometheus-operator
+home: https://pi-hole.net/
 dependencies:
   - name: pihole
-    version: "1.7.17"
+    version: "1.8.34"
     repository: https://mojo2600.github.io/pihole-kubernetes/
     condition: pihole.enabled
