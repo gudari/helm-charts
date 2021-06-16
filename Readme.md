@@ -16,8 +16,8 @@ helm upgrade rpi-metallb --create-namespace --namespace rpi-controlplane gudari/
 
 # Nginx Ingress controller
 
-helm install rpi-ingress-nginx --create-namespace --namespace rpi-controlplane ingress-nginx
-helm upgrade rpi-ingress-nginx --create-namespace --namespace rpi-controlplane ingress-nginx
+helm install rpi-ingress-nginx --create-namespace --namespace rpi-controlplane gudari/ingress-nginx
+helm upgrade rpi-ingress-nginx --create-namespace --namespace rpi-controlplane gudari/ingress-nginx
 
 
 # Prometheus Operator
