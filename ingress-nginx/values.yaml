@@ -5,8 +5,11 @@ ingress-nginx:
     create: true
   
   defaultBackend:
+    enabled: true
     image:
-      repository: k8s.gcr.io/defaultbackend-arm
+      registry: k8s.gcr.io
+      image: defaultbackend-arm64
+      tag: "1.5"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -25,7 +28,8 @@ ingress-nginx:
         memory: 50Mi
   controller:
     image:
-      repository: k8s-artifacts-prod/ingress-nginx/controller
+      registry: k8s.gcr.io
+      repository: ingress-nginx/controller
       tag: v0.47.0
     affinity:
       nodeAffinity:
