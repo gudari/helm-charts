@@ -1,0 +1,23 @@
+apiVersion: v1
+entries:
+  metallb:
+  - apiVersion: v2
+    appVersion: 0.9.3
+    created: "2021-06-16T12:10:15.670580892+02:00"
+    dependencies:
+    - condition: metallb.enabled
+      name: metallb
+      repository: https://charts.bitnami.com/bitnami
+      version: 2.3.6
+    description: MetalLB is a load-balancer implementation for bare metal Kubernetes
+      clusters, using standard routing protocols.
+    digest: 23d40d07f53cd8a415c2782c1c82832ed58cdf7d2890be9665799d5ce903619c
+    home: https://metallb.universe.tf/
+    icon: https://metallb.universe.tf/images/logo/metallb-white.png
+    name: metallb
+    sources:
+    - https://github.com/metallb/metallb
+    urls:
+    - charts/metallb-2.3.6.tgz
+    version: 2.3.6
+generated: "2021-06-16T12:10:15.668531747+02:00"
