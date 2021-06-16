@@ -3,7 +3,7 @@ entries:
   ingress-nginx:
   - apiVersion: v2
     appVersion: 0.47.0
-    created: "2021-06-16T17:01:24.147376206+02:00"
+    created: "2021-06-16T17:07:00.167914819+02:00"
     dependencies:
     - condition: ingress-nginx.enabled
       name: ingress-nginx
@@ -17,12 +17,12 @@ entries:
     sources:
     - https://github.com/kubernetes/ingress-nginx
     urls:
-    - charts/charts/ingress-nginx-3.33.0.tgz
+    - charts/ingress-nginx-3.33.0.tgz
     version: 3.33.0
   metallb:
   - apiVersion: v2
     appVersion: 0.10.2
-    created: "2021-06-16T17:01:24.148848427+02:00"
+    created: "2021-06-16T17:07:00.16928358+02:00"
     dependencies:
     - condition: metallb.enabled
       name: metallb
@@ -37,6 +37,6 @@ entries:
     sources:
     - https://github.com/metallb/metallb
     urls:
-    - charts/charts/metallb-0.10.2.tgz
+    - charts/metallb-0.10.2.tgz
     version: 0.10.2
-generated: "2021-06-16T17:01:24.143351013+02:00"
+generated: "2021-06-16T17:07:00.164036271+02:00"
