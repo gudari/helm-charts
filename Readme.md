@@ -27,16 +27,16 @@ helm upgrade rpi-prometheus --create-namespace --namespace rpi-controlplane prom
 
 # Cert Manager
 
-helm install rpi-cert-manager --create-namespace --namespace rpi-controlplane cert-manager
-helm upgrade rpi-cert-manager --create-namespace --namespace rpi-controlplane cert-manager
+helm install rpi-cert-manager --create-namespace --namespace rpi-controlplane gudari/cert-manager
+helm upgrade rpi-cert-manager --create-namespace --namespace rpi-controlplane gudari/cert-manager
 
 helm install rpi-cm-ca-issuer --create-namespace --namespace rpi-controlplane cm-ca-issuer
 helm upgrade rpi-cm-ca-issuer --create-namespace --namespace rpi-controlplane cm-ca-issuer
 
 # Pi-Hole
 
-helm install rpi-hole --create-namespace --namespace rpi-controlplane pi-hole
-helm upgrade rpi-hole --create-namespace --namespace rpi-controlplane pi-hole
+helm install rpi-hole --create-namespace --namespace rpi-controlplane gudari/pi-hole
+helm upgrade rpi-hole --create-namespace --namespace rpi-controlplane gudari/pi-hole
 
 # oauth2 proxy
 
