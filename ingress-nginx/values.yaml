@@ -29,8 +29,8 @@ ingress-nginx:
   controller:
     image:
       registry: k8s.gcr.io
-      repository: ingress-nginx/controller
-      tag: v0.47.0
+      image: ingress-nginx/controller
+      tag: "v0.47.0"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:

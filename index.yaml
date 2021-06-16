@@ -3,7 +3,7 @@ entries:
   ingress-nginx:
   - apiVersion: v2
     appVersion: 0.47.0
-    created: "2021-06-16T17:28:35.454741941+02:00"
+    created: "2021-06-16T17:46:59.531264097+02:00"
     dependencies:
     - condition: ingress-nginx.enabled
       name: ingress-nginx
@@ -11,7 +11,7 @@ entries:
       version: 3.33.0
     description: ingress-nginx is an Ingress controller for Kubernetes using NGINX
       as a reverse proxy and load balancer.
-    digest: a1f17dfad5002e3918bae4899cd4ea06f5a4e4468de2e1d7ec33a381f75ede98
+    digest: cded754338183b144a47d27f83058f1450f9cec279acd76ec1f4acbb37d979a3
     home: https://kubernetes.github.io/ingress-nginx/
     name: ingress-nginx
     sources:
@@ -22,7 +22,7 @@ entries:
   metallb:
   - apiVersion: v2
     appVersion: 0.10.2
-    created: "2021-06-16T17:28:35.45615693+02:00"
+    created: "2021-06-16T17:46:59.532563711+02:00"
     dependencies:
     - condition: metallb.enabled
       name: metallb
@@ -39,4 +39,4 @@ entries:
     urls:
     - charts/metallb-0.10.2.tgz
     version: 0.10.2
-generated: "2021-06-16T17:28:35.45105918+02:00"
+generated: "2021-06-16T17:46:59.527780702+02:00"
