@@ -5,11 +5,11 @@ engine: gotpl
 name: pi-hole
 sources:
   - https://github.com/pi-hole/pi-hole
-version: 1.8.34
-appVersion: 5.1.2
+version:  1.9.1
+appVersion: 5.8.1
 home: https://pi-hole.net/
 dependencies:
   - name: pihole
-    version: "1.8.34"
+    version: " 1.9.1"
     repository: https://mojo2600.github.io/pihole-kubernetes/
     condition: pihole.enabled
