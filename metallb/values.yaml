@@ -11,7 +11,7 @@ metallb:
     image:
       registry: docker.io
       repository: metallb/controller
-      tag: v0.9.3
+      tag: v0.10.2
     resources:
         limits:
           cpu: 110m
@@ -32,7 +32,7 @@ metallb:
     image:
       registry: docker.io
       repository: metallb/speaker
-      tag: v0.9.3
+      tag: v0.10.2
     resources:
         limits:
           cpu: 110m
@@ -40,4 +40,3 @@ metallb:
         requests:
           memory: 128Mi
           cpu: 100m
-

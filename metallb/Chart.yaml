@@ -5,11 +5,11 @@ engine: gotpl
 name: metallb
 sources:
   - https://github.com/metallb/metallb
-version: 0.1.21
-appVersion: 0.9.3
+version: 0.10.2
+appVersion: 0.10.2
 home: https://metallb.universe.tf/
 dependencies:
   - name: metallb
-    version: "0.1.21"
-    repository: https://charts.bitnami.com/bitnami
+    version: "0.10.2"
+    repository: https://metallb.github.io/metallb
     condition: metallb.enabled
