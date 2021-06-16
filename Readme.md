@@ -10,14 +10,14 @@ curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.151:6443 K3S_TOKEN=K102
 
 # Metallb
 
-helm install rpi-metallb --create-namespace --namespace rpi-controlplane metallb
-helm upgrade rpi-metallb --create-namespace --namespace rpi-controlplane metallb
+helm install rpi-metallb --create-namespace --namespace rpi-controlplane gudari/metallb
+helm upgrade rpi-metallb --create-namespace --namespace rpi-controlplane gudari/metallb
 
 
 # Nginx Ingress controller
 
-helm install rpi-nginx-ingress --create-namespace --namespace rpi-controlplane nginx-ingress
-helm upgrade rpi-nginx-ingress --create-namespace --namespace rpi-controlplane nginx-ingress
+helm install rpi-ingress-nginx --create-namespace --namespace rpi-controlplane ingress-nginx
+helm upgrade rpi-ingress-nginx --create-namespace --namespace rpi-controlplane ingress-nginx
 
 
 # Prometheus Operator

@@ -1,23 +1,42 @@
 apiVersion: v1
 entries:
+  ingress-nginx:
+  - apiVersion: v2
+    appVersion: 0.47.0
+    created: "2021-06-16T16:45:57.74380488+02:00"
+    dependencies:
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 3.33.0
+    description: ingress-nginx is an Ingress controller for Kubernetes using NGINX
+      as a reverse proxy and load balancer.
+    digest: 340135068b43377e01776e24925f3f0c677352321b60366c82827dce95217a70
+    home: https://kubernetes.github.io/ingress-nginx/
+    name: ingress-nginx
+    sources:
+    - https://github.com/kubernetes/ingress-nginx
+    urls:
+    - charts/charts/ingress-nginx-3.33.0.tgz
+    version: 3.33.0
   metallb:
   - apiVersion: v2
-    appVersion: 0.9.3
-    created: "2021-06-16T12:10:15.670580892+02:00"
+    appVersion: 0.10.2
+    created: "2021-06-16T16:45:57.745090347+02:00"
     dependencies:
     - condition: metallb.enabled
       name: metallb
-      repository: https://charts.bitnami.com/bitnami
-      version: 2.3.6
+      repository: https://metallb.github.io/metallb
+      version: 0.10.2
     description: MetalLB is a load-balancer implementation for bare metal Kubernetes
       clusters, using standard routing protocols.
-    digest: 23d40d07f53cd8a415c2782c1c82832ed58cdf7d2890be9665799d5ce903619c
+    digest: 71cf05e4cd34ba9cc1470dedce2e621695b8b4eef7b6465b098aa74ee8d39a48
     home: https://metallb.universe.tf/
     icon: https://metallb.universe.tf/images/logo/metallb-white.png
     name: metallb
     sources:
     - https://github.com/metallb/metallb
     urls:
-    - charts/metallb-2.3.6.tgz
-    version: 2.3.6
-generated: "2021-06-16T12:10:15.668531747+02:00"
+    - charts/charts/metallb-0.10.2.tgz
+    version: 0.10.2
+generated: "2021-06-16T16:45:57.738048182+02:00"

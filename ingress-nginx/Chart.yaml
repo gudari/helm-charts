@@ -1,5 +1,5 @@
 apiVersion: v2
-description: A reverse proxy and static file server that provides authentication using Providers (Google, GitHub, and others) to validate accounts by email, domain or group.
+description: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
 engine: gotpl
 name: ingress-nginx
 sources:
