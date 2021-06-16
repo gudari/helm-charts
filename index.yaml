@@ -3,7 +3,7 @@ entries:
   ingress-nginx:
   - apiVersion: v2
     appVersion: 0.47.0
-    created: "2021-06-16T18:11:22.905839017+02:00"
+    created: "2021-06-16T21:20:45.323384624+02:00"
     dependencies:
     - condition: ingress-nginx.enabled
       name: ingress-nginx
@@ -22,7 +22,7 @@ entries:
   metallb:
   - apiVersion: v2
     appVersion: 0.10.2
-    created: "2021-06-16T18:11:22.907321042+02:00"
+    created: "2021-06-16T21:20:45.32477812+02:00"
     dependencies:
     - condition: metallb.enabled
       name: metallb
@@ -42,14 +42,14 @@ entries:
   pi-hole:
   - apiVersion: v2
     appVersion: 5.8.1
-    created: "2021-06-16T18:11:22.909464591+02:00"
+    created: "2021-06-16T21:20:45.32624514+02:00"
     dependencies:
     - condition: pihole.enabled
       name: pihole
       repository: https://mojo2600.github.io/pihole-kubernetes/
       version: 1.9.1
     description: Network-wide Ad Blocking.
-    digest: 0255ec202507f043c5df722266bc4f9e086bbb9e8658ccc75ec8eeefab141640
+    digest: d233da7aa09f62741d24ac4f613a3670e2a9e8115fcbdc49cd740ae67811ca71
     home: https://pi-hole.net/
     icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2018/12/pihole-text-logo-white.png.webp
     name: pi-hole
@@ -58,4 +58,4 @@ entries:
     urls:
     - charts/pi-hole-1.9.1.tgz
     version: 1.9.1
-generated: "2021-06-16T18:11:22.90241806+02:00"
+generated: "2021-06-16T21:20:45.319779697+02:00"

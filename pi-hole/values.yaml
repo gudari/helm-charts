@@ -3,12 +3,7 @@ pihole:
   image:
     repository: "pihole/pihole"
     tag: v5.8.1
-  serviceTCP:
-    type: LoadBalancer
-    loadBalancerIP: "192.168.1.201"
-    annotations:
-      metallb.universe.tf/allow-shared-ip: pihole-svc
-  serviceUDP:
+  serviceDns:
     type: LoadBalancer
     loadBalancerIP: "192.168.1.201"
     annotations:
