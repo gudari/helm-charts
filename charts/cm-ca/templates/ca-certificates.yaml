@@ -1,0 +1,32 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cm-ca.fullname" . }}
+spec:
+  isCA: true
+  commonName: Coulicoders CA
+  secretName: {{ include "cm-ca.fullname" . }}-secret
+  duration: 8760h # 365d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+    - Coulicoders
+    organizationalUnits:
+    - Courses
+    - Tutorials
+    countries:
+    - ES
+    provinces:
+    - Gipuzkoa
+    localities:
+    - Oiartzun
+    postalCodes:
+    - "20180"
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  issuerRef:
+    name: {{ include "cm-ca.fullname" . }}-selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io

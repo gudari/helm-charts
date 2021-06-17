@@ -1,8 +1,8 @@
 apiVersion: v2
-description: Provides easy monitoring definitions for Kubernetes services, and deployment and management of Prometheus instances.
+description: Selfsigned Certificate Autority to apply tls in the ingress controller.
 icon: 
 engine: gotpl
-name: cm-ca-issuer
+name: cm-ca
 sources:
   - https://github.com/jetstack/cert-manager
 version: 0.0.1
