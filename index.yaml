@@ -1,0 +1,94 @@
+apiVersion: v1
+entries:
+  cert-manager:
+  - apiVersion: v2
+    appVersion: 1.4.0
+    created: "2021-06-17T12:55:13.832684828Z"
+    dependencies:
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.4.0
+    description: Cert-manager is a Kubernetes add-on to automate the management and
+      issuance of TLS certificates from various issuing sources.
+    digest: 8aed1967f6456311bcea6a933ebaf379aa2e38b46a70b9c8dd5ae7bcaaa27ebd
+    home: https://cert-manager.io/
+    icon: https://raw.githubusercontent.com/jetstack/cert-manager/master/logo/logo.png
+    name: cert-manager
+    sources:
+    - https://github.com/jetstack/cert-manager
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/cert-manager-1.4.0/cert-manager-1.4.0.tgz
+    version: 1.4.0
+  cm-ca:
+  - apiVersion: v2
+    appVersion: 0.0.1
+    created: "2021-06-17T12:55:13.943294587Z"
+    description: Selfsigned Certificate Autority to apply tls in the ingress controller.
+    digest: dced161b325ec3a3f98a4dfd69a75f5f2e561e86fe564b515947f498c059713b
+    home: https://cert-manager.io/
+    name: cm-ca
+    sources:
+    - https://github.com/jetstack/cert-manager
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/cm-ca-0.0.1/cm-ca-0.0.1.tgz
+    version: 0.0.1
+  ingress-nginx:
+  - apiVersion: v2
+    appVersion: 0.47.0
+    created: "2021-06-17T12:55:14.058864225Z"
+    dependencies:
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 3.33.0
+    description: ingress-nginx is an Ingress controller for Kubernetes using NGINX
+      as a reverse proxy and load balancer.
+    digest: 4326aa47c713914993df4e6418d0ff8281072dacaab97ec62009abb0a822469b
+    home: https://kubernetes.github.io/ingress-nginx/
+    name: ingress-nginx
+    sources:
+    - https://github.com/kubernetes/ingress-nginx
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/ingress-nginx-3.33.0/ingress-nginx-3.33.0.tgz
+    version: 3.33.0
+  metallb:
+  - apiVersion: v2
+    appVersion: 0.10.2
+    created: "2021-06-17T12:55:14.177356387Z"
+    dependencies:
+    - condition: metallb.enabled
+      name: metallb
+      repository: https://metallb.github.io/metallb
+      version: 0.10.2
+    description: MetalLB is a load-balancer implementation for bare metal Kubernetes
+      clusters, using standard routing protocols.
+    digest: 6357ba4e7ddac3d84bb4b420cd5aaa008e83d4cc71dce18127feb7f6fec4fc7e
+    home: https://metallb.universe.tf/
+    icon: https://metallb.universe.tf/images/logo/metallb-white.png
+    name: metallb
+    sources:
+    - https://github.com/metallb/metallb
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/metallb-0.10.2/metallb-0.10.2.tgz
+    version: 0.10.2
+  pi-hole:
+  - apiVersion: v2
+    appVersion: 5.8.1
+    created: "2021-06-17T12:55:14.305854315Z"
+    dependencies:
+    - condition: pihole.enabled
+      name: pihole
+      repository: https://mojo2600.github.io/pihole-kubernetes/
+      version: 1.9.1
+    description: Network-wide Ad Blocking.
+    digest: 85f47c10a3898c03cc0326a889a4a806c8b814d59f2a8aeb082e991800dc2c2a
+    home: https://pi-hole.net/
+    icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2018/12/pihole-text-logo-white.png.webp
+    name: pi-hole
+    sources:
+    - https://github.com/pi-hole/pi-hole
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/pi-hole-1.9.1/pi-hole-1.9.1.tgz
+    version: 1.9.1
+generated: "2021-06-17T12:55:14.305859315Z"
