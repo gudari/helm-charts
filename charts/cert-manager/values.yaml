@@ -2,7 +2,7 @@ cert-manager:
   enabled: true
   installCRDs: true
   ingressShim:
-    defaultIssuerName: cm-ca-issuer
+    defaultIssuerName: rpi-cm-ca-issuer
     defaultIssuerKind: ClusterIssuer
 
   image:
