@@ -1,0 +1,15 @@
+apiVersion: v2
+description: Fast, reliable, scalable, and easy to use open-source relational database system. MariaDB Server is intended for mission-critical, heavy-load production systems as well as for embedding into mass-deployed software. Highly available MariaDB cluster.
+icon: https://mariadb.org/wp-content/uploads/2019/01/mariadb_org_rgb_v.png
+engine: gotpl
+name: mariadb
+sources:
+  - https://github.com/MariaDB/server
+version: 9.3.14
+appVersion: 10.5.10
+home: https://mariadb.org/
+dependencies:
+  - name: mariadb
+    version: "9.3.14"
+    repository: https://charts.bitnami.com/bitnami/
+    condition: mariadb.enabled

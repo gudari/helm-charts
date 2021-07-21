@@ -1,0 +1,175 @@
+kube-prometheus-stack:
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: false
+      etcd: false
+      kubeScheduler: false
+  kubeEtcd:
+    enabled: false
+  kubeControllerManager:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  alertmanager:
+    enabled: false
+
+  prometheusOperator:
+    image:
+      repository: quay.io/prometheus-operator/prometheus-operator
+      tag: v0.48.1
+    prometheusConfigReloaderImage:
+      repository: quay.io/prometheus-operator/prometheus-config-reloader
+      tag: v0.48.1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 60m
+        memory: 100Mi
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: In
+                values:
+                - "true"
+
+  kube-state-metrics:
+    image:
+      repository: k8s.gcr.io/kube-state-metrics/kube-state-metrics
+      tag: v2.0.0
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 60m
+        memory: 100Mi
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: In
+                values:
+                - "true"
+
+  grafana:
+    enabled: true
+    image:
+      repository: grafana/grafana
+      tag: 8.0.3
+    replicas: 1
+    grafana.ini:
+      server:
+        root_url: https://grafana.gudari.io
+        domain: grafana.gudari.io
+        enforce_domain: false
+        enable_gzip: true
+#      auth:
+#        disable_login_form: true
+#      auth.generic_oauth:
+#        enabled: true
+#        allow_sign_up: true
+#        name: Auth0
+#        client_id: dcT8QSQ6Ux4sArrpkf6391S2HHFED6EI
+#        client_secret: GA_MaZdNXrolWahNVRRUv3oowgu8Q0WqdBaMbrXdmVV9Px1AHPCuiQ_n_8MvjN0a 
+#        scopes: "openid profile email"
+#        auth_url: https://dev-se96zcxp.eu.auth0.com/authorize
+#        token_url: https://dev-se96zcxp.eu.auth0.com/oauth/token
+#        api_url: https://dev-se96zcxp.eu.auth0.com/userinfo
+    sidecar:
+      image:
+        repository: quay.io/kiwigrid/k8s-sidecar
+        tag: 1.12.2
+      notifiers:
+        enabled: false
+    adminPassword: prom-operator
+    ingress:
+      enabled: true
+      hosts:
+      - grafana.gudari.io
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      tls:
+      - secretName: grafana-tls
+        hosts:
+        - grafana.gudari.io
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 210m
+        memory: 512Mi
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: In
+                values:
+                - "true"
+    persistence:
+      enabled: true
+      size: 5Gi
+
+  prometheus-node-exporter:
+    enabled: true
+    image:
+      repository: quay.io/prometheus/node-exporter
+      tag: v1.1.2
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 60m
+        memory: 100Mi
+
+  prometheus:
+    ingress:
+      enabled: true
+      hosts:
+      - prometheus.gudari.io
+      pathType: ImplementationSpecific
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      tls:
+      - secretName: prometheus-tls
+        hosts:
+        - prometheus.gudari.io
+    prometheusSpec:
+      replicas: 1
+      retention: 3d
+      image:
+        repository: quay.io/prometheus/prometheus
+        tag: v2.27.1
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: "node-role.kubernetes.io/master"
+                  operator: In
+                  values:
+                  - "true"
+      resources:
+        requests:
+          cpu: 750m
+          memory: 2Gi
+        limits:
+          cpu: 800m
+          memory: 2Gi
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            resources:
+              requests:
+                storage: 5Gi

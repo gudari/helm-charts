@@ -1,0 +1,16 @@
+mariadb:
+  enable: true
+
+  image:
+    repository: gudari/mariadb
+    tag: "10.6.1"
+  auth:
+    rootPassword: "EEcC5CeOQF"
+  
+  primary:
+    podSecurityContext:
+      fsGroup: 999
+    containerSecurityContext:
+      runAsUser: 999
+    persistence:
+      enabled: false

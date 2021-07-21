@@ -1,0 +1,15 @@
+apiVersion: v2
+description: Provides easy monitoring definitions for Kubernetes services, and deployment and management of Prometheus instances.
+icon: https://raw.githubusercontent.com/prometheus/prometheus.github.io/master/assets/prometheus_logo-cb55bb5c346.png
+engine: gotpl
+name: kube-prometheus-stack
+sources:
+- https://github.com/prometheus-operator/prometheus-operator
+version: 16.13.0
+appVersion: 0.48.1
+home: https://prometheus-operator.dev/
+dependencies:
+  - name: kube-prometheus-stack
+    version: 16.13.0
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: kube-prometheus-stack.enabled
