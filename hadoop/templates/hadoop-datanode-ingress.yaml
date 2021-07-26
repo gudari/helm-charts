@@ -4,7 +4,7 @@
 {{- $ingressValues := .Values.hdfs.dataNode.ingressPerReplica -}}
 {{- range $i, $e := until $count }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
@@ -41,20 +41,25 @@ spec:
     {{ if $ingressValues.extraPaths }}
     {{ toYaml $ingressValues.extraPaths | indent 12 }}
     {{- end }}
-      - path: {{ $ingressValues.path }}
+      - pathType: Prefix
+        path: {{ $ingressValues.path }}
         backend:
-          serviceName: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
-          servicePort: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
+          service:
+            name: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
+            port:
+              number: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
   {{- end }}
   {{- else }}
   - http:
       paths:
-      - backend:
-          serviceName: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
-          servicePort: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
-          {{- if $ingressValues.path }}
-            path: {{ $ingressValues.path }}
-          {{- end }}
+      - pathType: Prefix
+        backend:
+          name: {{ include "hadoop.fullname" $ }}-hdfs-datanode-{{ $i }}
+          port:
+            number: {{ $.Values.hdfs.dataNode.ports.http.containerPort }}
+      {{- if $ingressValues.path }}
+        path: {{ $ingressValues.path }}
+      {{- end }}
 
 {{- end }}
 {{- end }}

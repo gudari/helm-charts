@@ -1,6 +1,6 @@
 {{- if .Values.yarn.resourceManager.enabled }}
-{{- if .Values.yarn.resourceManager.enableIngress }}
-apiVersion: extensions/v1beta1
+{{- if .Values.yarn.resourceManager.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
@@ -9,17 +9,44 @@ metadata:
     chart: {{ include "hadoop.chart" . }}
     release: {{ .Release.Name }}
     component: yarn-resourcemanager
+{{- with .Values.yarn.resourceManager.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
+{{- if .Values.yarn.resourceManager.ingress.tls }}
+  tls:
+{{ toYaml .Values.yarn.resourceManager.ingress.tls | indent 4 }}
+{{- end }}
   rules:
-  - host: resourcemanager.gudari.io
+  {{- if .Values.yarn.resourceManager.ingress.hosts  }}
+  {{- range .Values.yarn.resourceManager.ingress.hosts }}
+  - host: {{ . }}
     http:
       paths:
-      - backend:
-          serviceName: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
-          servicePort: web
-        path: /
-  tls:
-  - hosts:
-    - resourcemanager.gudari.io
+{{ if $.Values.yarn.resourceManager.ingress.extraPaths }}
+{{ toYaml $.Values.yarn.resourceManager.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - pathType: Prefix
+        path: {{ $.Values.yarn.resourceManager.ingress.path }}
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" $ }}-yarn-resourcemanager
+            port:
+              number: {{ $.Values.yarn.resourceManager.ports.http.containerPort }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - pathType: Prefix
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" $ }}-yarn-resourcemanager
+            port:
+              number: {{ $.Values.yarn.resourceManager.ports.http.containerPort }}
+          {{- if $.Values.yarn.resourceManager.ingress.path }}
+            path: {{ $.Values.yarn.resourceManager.ingress.path }}
+          {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}

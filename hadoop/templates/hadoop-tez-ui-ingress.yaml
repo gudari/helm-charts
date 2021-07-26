@@ -1,5 +1,5 @@
-{{- if .Values.mapred.historyServer.enableIngress -}}
-apiVersion: extensions/v1beta1
+{{- if .Values.tez.ui.enabled }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "hadoop.fullname" . }}-tez-ui
@@ -13,9 +13,12 @@ spec:
   - host: tez-ui.gudari.io
     http:
       paths:
-      - backend:
-          serviceName: {{ include "hadoop.fullname" . }}-tez-ui
-          servicePort: web
+      - pathType: Prefix
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" . }}-tez-ui
+            port:
+              number: 8080
         path: /
   tls:
   - hosts:

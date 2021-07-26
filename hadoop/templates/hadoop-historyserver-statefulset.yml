@@ -5,6 +5,9 @@ metadata:
   name: {{ include "hadoop.fullname" . }}-mapred-historyserver
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.mapred.historyServer.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   labels:
     app: {{ include "hadoop.name" . }}
     chart: {{ include "hadoop.chart" . }}
@@ -22,12 +25,22 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.mapred.historyServer.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       labels:
         app: {{ include "hadoop.name" . }}
         release: {{ .Release.Name }}
         component: mapred-historyserver
     spec:
+    {{- with .Values.mapred.historyServer.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 8 }}
+    {{- end }}
       affinity:
+    {{- if .Values.mapred.historyServer.affinity }}
+{{ toYaml .Values.mapred.historyServer.affinity | indent 8 }}
+    {{- end }}
         podAntiAffinity:
         {{- if eq .Values.mapred.historyServer.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -52,21 +65,29 @@ spec:
       containers:
       - name: mapred-historyserver
         image: "{{ .Values.mapred.historyServer.image.repository }}:{{ .Values.mapred.historyServer.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        imagePullPolicy: {{ .Values.mapred.historyServer.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.mapred.historyServer.resources | indent 10 }}
+        ports:
+{{- range $key, $port := .Values.mapred.historyServer.ports }}
+        - name: {{ $key }}
+{{ toYaml $port | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /ws/v1/history/info
-            port: 19888
+            port: {{ .Values.mapred.historyServer.ports.http.containerPort }}
           initialDelaySeconds: 120
           timeoutSeconds: 2
         livenessProbe:
           httpGet:
             path: /ws/v1/history/info
-            port: 19888
+            port: {{ .Values.mapred.historyServer.ports.http.containerPort }}
           initialDelaySeconds: 120
           timeoutSeconds: 2
+        env:
+        - name: SERVICE_PRECONDITION
+          value: "{{ include "hadoop.fullname" . }}-hdfs-namenode-0.{{ include "hadoop.fullname" . }}-hdfs-namenode.{{ .Release.Namespace }}.svc.cluster.local:50070"
         envFrom:
         - configMapRef:
             name: {{ include "hadoop.fullname" . }}-configmap

@@ -9,9 +9,16 @@ metadata:
     release: {{ .Release.Name }}
     component: yarn-timelineserver
 spec:
+{{- if .Values.yarn.timeLineServer.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
   ports:
-  - port: 8188
-    name: web
+  {{- range $key, $port := .Values.yarn.timeLineServer.ports }}
+  - name: {{ $key }}
+    port: {{ $port.containerPort }}
+    targetPort: {{ $key }}
+    protocol: {{ $port.protocol }}
+  {{- end }}
   clusterIP: None
   selector:
     app: {{ include "hadoop.name" . }}

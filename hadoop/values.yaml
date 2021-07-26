@@ -2,15 +2,19 @@
 # See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
 image:
   repository: gudari/hadoop
-  tag: 3.2.1-arm64
+  tag: 2.10.1
   pullPolicy: Always #Always
 
 # The version of the hadoop libraries being used in the image.
-hadoopVersion: 3.2.1
+hadoopVersion: 2.10.1
 
 hdfs:
   nameNode:
     enabled: true
+    image:
+      repository: gudari/hadoop
+      tag: 2.10.1
+      pullPolicy: Always
     replicas: 1
     annotations: {}
     antiAffinity: "soft"
@@ -61,7 +65,11 @@ hdfs:
 
   dataNode:
     enabled: true
-    replicas: 2
+    image:
+      repository: gudari/hadoop
+      tag: 2.10.1
+      pullPolicy: Always
+    replicas: 3
     annotations: {}
     antiAffinity: "soft"
     nodeSelector: {}
@@ -75,6 +83,7 @@ hdfs:
                 values:
                 - "rpi-slave-2"
                 - "rpi-slave-3"
+                - "rpi-slave-4"
     pdbMinAvailable: 0
     resources:
       requests:
@@ -120,6 +129,10 @@ hdfs:
         - gudari.io
   nfsGateway:
     enabled: false
+    image:
+      repository: gudari/hadoop
+      tag: 2.10.1
+      pullPolicy: Always
     replicas: 0
     annotations: {}
     antiAffinity: ""
@@ -184,11 +197,22 @@ mapred:
   historyServer:
     enabled: true
     image:
-      repository: gudari/tez-hadoop
-      tag: 0.10.0-arm64
+      repository: gudari/hadoop
+      tag: 2.10.1
       pullPolicy: Always
-    antiAffinity: "soft"
     replicas: 1
+    annotations: {}
+    antiAffinity: "soft"
+    nodeSelector: {}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-1"
     pdbMinAvailable: 0
     resources:
       requests:
@@ -197,17 +221,45 @@ mapred:
       limits:
         memory: "512Mi"
         cpu: "500m"
-    
-    enableIngress: true
-
+    publishNotReadyAddresses: true
+    ports:
+      http:
+        containerPort: 19888
+        protocol: TCP
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      path: /
+      hosts:
+      - historyserver.gudari.io
+      extraPaths: []
+      tls:
+      - secretName: historyserver-tls
+        hosts:
+        - historyserver.gudari.io
 
 yarn:
   resourceManager:
     enabled: true
-    antiAffinity: "soft"
+    image:
+      repository: gudari/hadoop
+      tag: 2.10.1
+      pullPolicy: Always
     replicas: 1
+    annotations: {}
+    antiAffinity: "soft"
+    nodeSelector: {}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-1"
     pdbMinAvailable: 0
-
     resources:
       requests:
         memory: "512Mi"
@@ -215,18 +267,34 @@ yarn:
       limits:
         memory: "512Mi"
         cpu: "500m"
-
-    enableIngress: true
+    publishNotReadyAddresses: true
+    ports:
+      http:
+        containerPort: 8088
+        protocol: TCP
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      path: /
+      hosts:
+      - resourcemanager.gudari.io
+      extraPaths: []
+      tls:
+      - secretName: resourcemanager-tls
+        hosts:
+        - resourcemanager.gudari.io
 
   nodeManager:
     enabled: true
     image:
-      repository: gudari/tez-hadoop
-      tag: 0.10.0-arm64
+      repository: gudari/hadoop
+      tag: 2.10.1
       pullPolicy: Always
+    replicas: 3
+    annotations: {}
     antiAffinity: "soft"
-    replicas: 1
-    pdbMinAvailable: 0
+    nodeSelector: {}
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -237,6 +305,8 @@ yarn:
                 values:
                 - "rpi-slave-2"
                 - "rpi-slave-3"
+                - "rpi-slave-4"
+    pdbMinAvailable: 0
     resources:
       requests:
         memory: "2048Mi"
@@ -244,19 +314,38 @@ yarn:
       limits:
         memory: "2048Mi"
         cpu: "520m"
+    publishNotReadyAddresses: true
+    ports:
+      http:
+        containerPort: 8088
+        protocol: TCP
+      http2:
+        containerPort: 8082
+        protocol: TCP
+      api:
+        containerPort: 8042
+        protocol: TCP
 
   timeLineServer:
     enabled: true
     image:
-      repository: gudari/tez-hadoop
-      tag: 0.10.0-arm64
+      repository: gudari/hadoop
+      tag: 2.10.1
       pullPolicy: Always
-    antiAffinity: "soft"
     replicas: 1
+    annotations: {}
+    antiAffinity: "soft"
+    nodeSelector: {}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-1"
     pdbMinAvailable: 0
-
-    # CPU and memory resources allocated to each node manager pod.
-    # This should be tuned to fit your workload.
     resources:
       requests:
         memory: "512Mi"
@@ -264,12 +353,27 @@ yarn:
       limits:
         memory: "512Mi"
         cpu: "450m"
-
-    enableIngress: true
+    publishNotReadyAddresses: true
+    ports:
+      http:
+        containerPort: 8188
+        protocol: TCP
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      path: /
+      hosts:
+      - timelineserver.gudari.io
+      extraPaths: []
+      tls:
+      - secretName: timelineserver-tls
+        hosts:
+        - timelineserver.gudari.io
 
 tez:
   ui:
-    enabled: true
+    enabled: false
     image:
       repository: gudari/tez-ui
       tag: 0.10.0-arm64

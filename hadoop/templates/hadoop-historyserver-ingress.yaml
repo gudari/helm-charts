@@ -1,5 +1,6 @@
-{{- if .Values.mapred.historyServer.enableIngress -}}
-apiVersion: extensions/v1beta1
+{{- if .Values.mapred.historyServer.enabled -}}
+{{- if .Values.mapred.historyServer.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "hadoop.fullname" . }}-mapred-historyserver
@@ -8,16 +9,43 @@ metadata:
     chart: {{ include "hadoop.chart" . }}
     release: {{ .Release.Name }}
     component: mapred-historyserver
+{{- with .Values.mapred.historyServer.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
+{{- if .Values.mapred.historyServer.ingress.tls }}
+  tls:
+{{ toYaml .Values.mapred.historyServer.ingress.tls | indent 4 }}
+{{- end }}
   rules:
-  - host: historyserver.gudari.io
+  {{- if .Values.mapred.historyServer.ingress.hosts  }}
+  {{- range .Values.mapred.historyServer.ingress.hosts }}
+  - host: {{ . }}
     http:
       paths:
-      - backend:
-          serviceName: {{ include "hadoop.fullname" . }}-mapred-historyserver
-          servicePort: web
-        path: /
-  tls:
-  - hosts:
-    - historyserver.gudari.io
+{{ if $.Values.mapred.historyServer.ingress.extraPaths }}
+{{ toYaml $.Values.mapred.historyServer.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - pathType: Prefix
+        path: {{ $.Values.mapred.historyServer.ingress.path }}
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" $ }}-mapred-historyserver
+            port:
+              number: {{ $.Values.mapred.historyServer.ports.http.containerPort }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - pathType: Prefix
+        backend:
+          name: {{ include "hadoop.fullname" $ }}-mapred-historyserver
+          port:
+            number: {{ $.Values.mapred.historyServer.ports.http.containerPort }}
+          {{- if $.Values.mapred.historyServer.ingress.path }}
+            path: {{ $.Values.mapred.historyServer.ingress.path }}
+          {{- end }}
+{{- end }}
+{{- end -}}
 {{- end -}}

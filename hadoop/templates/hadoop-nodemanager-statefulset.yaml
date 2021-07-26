@@ -5,6 +5,9 @@ metadata:
   name: {{ include "hadoop.fullname" . }}-yarn-nodemanager
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.yarn.nodeManager.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   labels:
     app: {{ include "hadoop.name" . }}
     chart: {{ include "hadoop.chart" . }}
@@ -25,6 +28,9 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.yarn.nodeManager.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       labels:
         app: {{ include "hadoop.name" . }}
         release: {{ .Release.Name }}
@@ -34,8 +40,8 @@ spec:
     {{- if .Values.yarn.nodeManager.affinity }}
 {{ toYaml .Values.yarn.nodeManager.affinity | indent 8 }}
     {{- end }}
-        podAntiAffinity:
         {{- if eq .Values.yarn.nodeManager.antiAffinity "hard" }}
+        podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -44,6 +50,7 @@ spec:
                 release: {{ .Release.Name | quote }}
                 component: yarn-nodemanager
         {{- else if eq .Values.yarn.nodeManager.antiAffinity "soft" }}
+        podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
@@ -58,22 +65,24 @@ spec:
       containers:
       - name: yarn-nodemanager
         image: "{{ .Values.yarn.nodeManager.image.repository }}:{{ .Values.yarn.nodeManager.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-        ports:
-        - containerPort: 8088
-          name: web
+        imagePullPolicy: {{ .Values.yarn.nodeManager.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.yarn.nodeManager.resources | indent 10 }}
+        ports:
+{{- range $key, $port := .Values.yarn.nodeManager.ports }}
+        - name: {{ $key }}
+{{ toYaml $port | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /node
-            port: 8042
+            port: {{ .Values.yarn.nodeManager.ports.api.containerPort }}
           initialDelaySeconds: 120
           timeoutSeconds: 2
         livenessProbe:
           httpGet:
             path: /node
-            port: 8042
+            port: {{ .Values.yarn.nodeManager.ports.api.containerPort }}
           initialDelaySeconds: 120
           timeoutSeconds: 2
         envFrom:

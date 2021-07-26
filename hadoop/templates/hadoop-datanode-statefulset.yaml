@@ -65,8 +65,8 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: hdfs-datanode
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        image: "{{ .Values.hdfs.dataNode.image.repository }}:{{ .Values.hdfs.dataNode.image.tag }}"
+        imagePullPolicy: {{ .Values.hdfs.dataNode.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.hdfs.dataNode.resources | indent 10 }}
         ports:

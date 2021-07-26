@@ -65,20 +65,25 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: hdfs-namenode
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        image: "{{ .Values.hdfs.nameNode.image.repository }}:{{ .Values.hdfs.nameNode.image.tag }}"
+        imagePullPolicy: {{ .Values.hdfs.nameNode.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.hdfs.nameNode.resources | indent 10 }}
+        ports:
+{{- range $key, $port := .Values.hdfs.nameNode.ports }}
+        - name: {{ $key }}
+{{ toYaml $port | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /
-            port: 50070
+            port: {{ .Values.hdfs.nameNode.ports.http.containerPort }}
           initialDelaySeconds: 90
           timeoutSeconds: 2
         livenessProbe:
           httpGet:
             path: /
-            port: 50070
+            port: {{ .Values.hdfs.nameNode.ports.http.containerPort }}
           initialDelaySeconds: 90
           timeoutSeconds: 2
         envFrom:
@@ -96,7 +101,6 @@ spec:
         - {{ .Values.persistence.nameNode.accessMode | quote }}
       resources:
         requests:
-          # upstream recommended max is 700M
           storage: {{ .Values.persistence.nameNode.size | quote }}
     {{- if .Values.persistence.nameNode.storageClass }}
     {{- if (eq "-" .Values.persistence.nameNode.storageClass) }}
@@ -106,6 +110,8 @@ spec:
     {{- end }}
     {{- end }}
       {{- else }}
-        emptyDir: {}
+      volumes:
+        - name: dfs
+          emptyDir: {}
       {{- end }}
 {{- end }}

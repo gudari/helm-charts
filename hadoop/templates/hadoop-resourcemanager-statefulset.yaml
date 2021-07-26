@@ -5,6 +5,9 @@ metadata:
   name: {{ include "hadoop.fullname" . }}-yarn-resourcemanager
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.yarn.resourceManager.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   labels:
     app: {{ include "hadoop.name" . }}
     chart: {{ include "hadoop.chart" . }}
@@ -22,12 +25,22 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.yarn.resourceManager.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       labels:
         app: {{ include "hadoop.name" . }}
         release: {{ .Release.Name }}
         component: yarn-resourcemanager
     spec:
+    {{- with .Values.yarn.resourceManager.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 8 }}
+    {{- end }}
       affinity:
+      {{- if .Values.yarn.resourceManager.affinity }}
+{{ toYaml .Values.yarn.resourceManager.affinity | indent 8 }}
+    {{- end }}
         podAntiAffinity:
         {{- if eq .Values.yarn.resourceManager.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -51,25 +64,30 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: yarn-resourcemanager
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-        ports:
-        - containerPort: 8088
-          name: web
+        image: "{{ .Values.yarn.resourceManager.image.repository }}:{{ .Values.yarn.resourceManager.image.tag }}"
+        imagePullPolicy: {{ .Values.yarn.resourceManager.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.yarn.resourceManager.resources | indent 10 }}
+        ports:
+{{- range $key, $port := .Values.yarn.resourceManager.ports }}
+        - name: {{ $key }}
+{{ toYaml $port | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /ws/v1/cluster/info
-            port: 8088
+            port: {{ .Values.yarn.resourceManager.ports.http.containerPort }}
           initialDelaySeconds: 120
           timeoutSeconds: 2
         livenessProbe:
           httpGet:
             path: /ws/v1/cluster/info
-            port: 8088
+            port: {{ .Values.yarn.resourceManager.ports.http.containerPort }}
           initialDelaySeconds: 120
           timeoutSeconds: 2
+        env:
+        - name: SERVICE_PRECONDITION
+          value: "{{ include "hadoop.fullname" . }}-hdfs-namenode-0.{{ include "hadoop.fullname" . }}-hdfs-namenode.{{ .Release.Namespace }}.svc.cluster.local:50070"
         envFrom:
         - configMapRef:
             name: {{ include "hadoop.fullname" . }}-configmap

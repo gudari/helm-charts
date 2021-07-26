@@ -54,8 +54,8 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: hdfs-nfsgateway
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        image: "{{ .Values.hdfs.nfsGateway.image.repository }}:{{ .Values.hdfs.nfsGateway.image.tag }}"
+        imagePullPolicy: {{ .Values.hdfs.nfsGateway.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.hdfs.nfsGateway.resources | indent 10 }}
         ports:

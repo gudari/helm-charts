@@ -9,9 +9,16 @@ metadata:
     release: {{ .Release.Name }}
     component: mapred-historyserver
 spec:
+{{- if .Values.mapred.historyServer.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
   ports:
-  - port: 19888
-    name: web
+  {{- range $key, $port := .Values.mapred.historyServer.ports }}
+  - name: {{ $key }}
+    port: {{ $port.containerPort }}
+    targetPort: {{ $key }}
+    protocol: {{ $port.protocol }}
+  {{- end }}
   clusterIP: None
   selector:
     app: {{ include "hadoop.name" . }}

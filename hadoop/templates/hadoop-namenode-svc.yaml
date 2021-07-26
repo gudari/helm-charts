@@ -1,4 +1,3 @@
-
 {{- if .Values.hdfs.nameNode.enabled }}
 apiVersion: v1
 kind: Service
@@ -10,12 +9,16 @@ metadata:
     release: {{ .Release.Name }}
     component: hdfs-namenode
 spec:
+{{- if .Values.hdfs.nameNode.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
   ports:
-  - name: dfs
-    port: 8020
-    protocol: TCP
-  - name: webhdfs
-    port: 50070
+  {{- range $key, $port := .Values.hdfs.nameNode.ports }}
+  - name: {{ $key }}
+    port: {{ $port.containerPort }}
+    targetPort: {{ $key }}
+    protocol: {{ $port.protocol }}
+  {{- end }}
   clusterIP: None
   selector:
     app: {{ include "hadoop.name" . }}

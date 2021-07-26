@@ -1,6 +1,6 @@
 {{- if .Values.yarn.timeLineServer.enabled }}
-{{- if .Values.yarn.timeLineServer.enableIngress }}
-apiVersion: extensions/v1beta1
+{{- if .Values.yarn.timeLineServer.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "hadoop.fullname" . }}-yarn-timelineserver
@@ -9,17 +9,44 @@ metadata:
     chart: {{ include "hadoop.chart" . }}
     release: {{ .Release.Name }}
     component: yarn-timelineserver
+{{- with .Values.yarn.timeLineServer.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
+{{- if .Values.yarn.timeLineServer.ingress.tls }}
+  tls:
+{{ toYaml .Values.yarn.timeLineServer.ingress.tls | indent 4 }}
+{{- end }}
   rules:
-  - host: timelineserver.gudari.io
+  {{- if .Values.yarn.timeLineServer.ingress.hosts  }}
+  {{- range .Values.yarn.timeLineServer.ingress.hosts }}
+  - host: {{ . }}
     http:
       paths:
-      - backend:
-          serviceName: {{ include "hadoop.fullname" . }}-yarn-timelineserver
-          servicePort: web
-        path: /
-  tls:
-  - hosts:
-    - timelineserver.gudari.io
+{{ if $.Values.yarn.timeLineServer.ingress.extraPaths }}
+{{ toYaml $.Values.yarn.timeLineServer.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - pathType: Prefix
+        path: {{ $.Values.yarn.timeLineServer.ingress.path }}
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" $ }}-yarn-timelineserver
+            port: 
+              number: {{ $.Values.yarn.timeLineServer.ports.http.containerPort }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - pathType: Prefix
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" $ }}-yarn-timelineserver
+            port:
+              number: {{ $.Values.yarn.timeLineServer.ports.http.containerPort }}
+      {{- if $.Values.yarn.timeLineServer.ingress.path }}
+        path: {{ $.Values.yarn.timeLineServer.ingress.path }}
+      {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}

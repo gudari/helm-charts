@@ -9,6 +9,9 @@ metadata:
     release: {{ .Release.Name }}
     component: tez-ui
 spec:
+{{- if .Values.tez.ui.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
   ports:
   - port: 8080
     name: web

@@ -9,9 +9,16 @@ metadata:
     release: {{ .Release.Name }}
     component: yarn-resourcemanager
 spec:
+{{- if .Values.yarn.resourceManager.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
   ports:
-  - port: 8088
-    name: web
+  {{- range $key, $port := .Values.yarn.resourceManager.ports }}
+  - name: {{ $key }}
+    port: {{ $port.containerPort }}
+    targetPort: {{ $key }}
+    protocol: {{ $port.protocol }}
+  {{- end }}
   clusterIP: None
   selector:
     app: {{ include "hadoop.name" . }}
