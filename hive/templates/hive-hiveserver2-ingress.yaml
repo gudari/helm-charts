@@ -1,0 +1,23 @@
+{{- if .Values.hiveserver2.enableIngress -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "hive.fullname" . }}-hiveserver2
+  labels:
+    app: {{ include "hive.name" . }}
+    chart: {{ include "hive.chart" . }}
+    release: {{ .Release.Name }}
+    component: hiveserver2
+spec:
+  rules:
+  - host: hiveserver2.gudari.io
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "hive.fullname" . }}-hiveserver2
+          servicePort: web
+        path: /
+  tls:
+  - hosts:
+    - hiveserver2.gudari.io
+{{- end -}}

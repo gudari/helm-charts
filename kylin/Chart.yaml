@@ -1,0 +1,12 @@
+apiVersion: v1
+description: The Apache Kylin version 3.1.1.
+name: kylin
+version: 0.0.1
+appVersion: 3.1.1
+home: https://kylin.apache.org/
+sources:
+- https://github.com/apache/kylin
+icon: https://kylin.apache.org/assets/images/kylin_logo.png
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

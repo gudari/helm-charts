@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kylin.fullname" . }}-server
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/server-configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "kylin.name" . }}
+    chart: {{ include "kylin.chart" . }}
+    release: {{ .Release.Name }}
+    component: server
+spec:
+  serviceName: {{ include "kylin.fullname" . }}-server
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "kylin.name" . }}
+      release: {{ .Release.Name }}
+      component: server
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/server-configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "kylin.name" . }}
+        release: {{ .Release.Name }}
+        component: server
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "kylin.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: server
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "kylin.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: server
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: server
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "kylin.fullname" . }}-configmap

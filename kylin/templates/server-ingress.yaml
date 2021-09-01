@@ -1,0 +1,23 @@
+{{- if .Values.enableIngress -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "kylin.fullname" . }}-server
+  labels:
+    app: {{ include "kylin.name" . }}
+    chart: {{ include "kylin.chart" . }}
+    release: {{ .Release.Name }}
+    component: server
+spec:
+  rules:
+  - host: kylin.gudari.io
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "kylin.fullname" . }}-server
+          servicePort: web
+        path: /
+  tls:
+  - hosts:
+    - kylin.gudari.io
+{{- end -}}

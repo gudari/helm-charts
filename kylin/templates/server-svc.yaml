@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kylin.fullname" . }}-server
+  labels:
+    app: {{ include "kylin.name" . }}
+    chart: {{ include "kylin.chart" . }}
+    release: {{ .Release.Name }}
+    component: server
+spec:
+  ports:
+  - name: web
+    port: 7070
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: {{ include "kylin.name" . }}
+    release: {{ .Release.Name }}
+    component: server

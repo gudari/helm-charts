@@ -1,0 +1,25 @@
+# The base spark image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+image:
+  repository: gudari/kylin
+  tag: 3.1.1-arm64
+  pullPolicy: Always
+
+# The version of the hadoop libraries being used in the image.
+sparkVersion: 3.1.1
+
+# Select antiAffinity as either hard or soft, default is soft
+antiAffinity: "soft"
+affinity: {}
+
+replicas: 1
+pdbMinAvailable: 0
+resources:
+  requests:
+    memory: "2048Mi"
+    cpu: "1"
+  limits:
+    memory: "2048Mi"
+    cpu: "1"
+
+enableIngress: true

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flink-sql-gateway.fullname" . }}-flink-sql-gateway
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+  labels:
+    app: {{ include "flink-sql-gateway.name" . }}
+    chart: {{ include "flink-sql-gateway.chart" . }}
+    release: {{ .Release.Name }}
+    component: flink-sql-gateway
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ include "flink-sql-gateway.name" . }}
+      release: {{ .Release.Name }}
+      component: flink-sql-gateway
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ include "flink-sql-gateway.name" . }}
+        release: {{ .Release.Name }}
+        component: flink-sql-gateway
+    spec:
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "flink-sql-gateway.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: flink-sql-gateway
+        {{- else if eq .Values.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "flink-sql-gateway.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: flink-sql-gateway
+        {{- end }}
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: flink-sql-gateway
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - name: web
+          containerPort: 8083
+          protocol: TCP
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /v1/info
+            port: 8083
+          initialDelaySeconds: 120
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /v1/info
+            port: 8083
+          initialDelaySeconds: 192
+          timeoutSeconds: 2
+        envFrom:
+        - configMapRef:
+            name: {{ include "flink-sql-gateway.fullname" . }}-configmap

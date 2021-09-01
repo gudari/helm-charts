@@ -1,0 +1,15 @@
+apiVersion: v2
+description: MinIO’s high performance, Kubernetes-native object storage suite is built for the demands of the hybrid cloud. Software-defined, it delivers a consistent experience across every Kubernetes environment.
+icon: https://min.io/resources/img/logo.svg
+engine: gotpl
+name: minio
+sources:
+  - https://github.com/minio/minio
+version: 8.0.10
+appVersion: 0.9.3
+home: https://min.io/
+dependencies:
+  - name: minio
+    version: "8.0.10"
+    repository: https://helm.min.io/
+    condition: minio.enabled
