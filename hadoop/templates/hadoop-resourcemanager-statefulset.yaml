@@ -61,6 +61,10 @@ spec:
                   release: {{ .Release.Name | quote }}
                   component: yarn-resourcemanager
         {{- end }}
+{{- if .Values.yarn.resourceManager.securityContext }}
+      securityContext:
+{{ toYaml .Values.yarn.resourceManager.securityContext | indent 8 }}
+{{- end }}
       terminationGracePeriodSeconds: 0
       containers:
       - name: yarn-resourcemanager

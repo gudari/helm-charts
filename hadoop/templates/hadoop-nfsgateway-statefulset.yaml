@@ -51,6 +51,10 @@ spec:
                   release: {{ .Release.Name | quote }}
                   component: hdfs-nfsgateway
         {{- end }}
+{{- if .Values.hdfs.nfsGateway.securityContext }}
+      securityContext:
+{{ toYaml .Values.hdfs.nfsGateway.securityContext | indent 8 }}
+{{- end }}
       terminationGracePeriodSeconds: 0
       containers:
       - name: hdfs-nfsgateway

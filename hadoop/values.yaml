@@ -2,19 +2,19 @@
 # See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
 image:
   repository: gudari/hadoop
-  tag: 2.10.1
-  pullPolicy: Always #Always
+  tag: 3.2.2
+  pullPolicy: IfNotPresent #IfNotPresent
 
 # The version of the hadoop libraries being used in the image.
-hadoopVersion: 2.10.1
+hadoopVersion: 3.2.2
 
 hdfs:
   nameNode:
     enabled: true
     image:
       repository: gudari/hadoop
-      tag: 2.10.1
-      pullPolicy: Always
+      tag: 3.2.2
+      pullPolicy: IfNotPresent
     replicas: 1
     annotations: {}
     antiAffinity: "soft"
@@ -28,6 +28,9 @@ hdfs:
                 operator: In
                 values:
                 - "rpi-slave-1"
+    securityContext:
+      runAsUser: 1000
+      fsGroup: 1000
     pdbMinAvailable: 0
     resources:
       requests:
@@ -67,8 +70,8 @@ hdfs:
     enabled: true
     image:
       repository: gudari/hadoop
-      tag: 2.10.1
-      pullPolicy: Always
+      tag: 3.2.2
+      pullPolicy: IfNotPresent
     replicas: 3
     annotations: {}
     antiAffinity: "soft"
@@ -84,6 +87,9 @@ hdfs:
                 - "rpi-slave-2"
                 - "rpi-slave-3"
                 - "rpi-slave-4"
+    securityContext:
+      runAsUser: 1000
+      fsGroup: 1000
     pdbMinAvailable: 0
     resources:
       requests:
@@ -128,12 +134,12 @@ hdfs:
         domains:
         - gudari.io
   nfsGateway:
-    enabled: false
+    enabled: true
     image:
       repository: gudari/hadoop
-      tag: 2.10.1
-      pullPolicy: Always
-    replicas: 0
+      tag: 3.2.2
+      pullPolicy: IfNotPresent
+    replicas: 1
     annotations: {}
     antiAffinity: ""
     nodeSelector: {}
@@ -146,6 +152,12 @@ hdfs:
                 operator: In
                 values:
                 - "rpi-slave-1"
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      sysctls:
+      - name: net.ipv4.ip_unprivileged_port_start
+        value: "0"
     pdbMinAvailable: 0
     resources:
       requests:
@@ -198,8 +210,8 @@ mapred:
     enabled: true
     image:
       repository: gudari/hadoop
-      tag: 2.10.1
-      pullPolicy: Always
+      tag: 3.2.2
+      pullPolicy: IfNotPresent
     replicas: 1
     annotations: {}
     antiAffinity: "soft"
@@ -213,6 +225,9 @@ mapred:
                 operator: In
                 values:
                 - "rpi-slave-1"
+    securityContext:
+      runAsUser: 1000
+      fsGroup: 1000
     pdbMinAvailable: 0
     resources:
       requests:
@@ -244,8 +259,8 @@ yarn:
     enabled: true
     image:
       repository: gudari/hadoop
-      tag: 2.10.1
-      pullPolicy: Always
+      tag: 3.2.2
+      pullPolicy: IfNotPresent
     replicas: 1
     annotations: {}
     antiAffinity: "soft"
@@ -259,6 +274,9 @@ yarn:
                 operator: In
                 values:
                 - "rpi-slave-1"
+    securityContext:
+      runAsUser: 1000
+      fsGroup: 1000
     pdbMinAvailable: 0
     resources:
       requests:
@@ -289,8 +307,8 @@ yarn:
     enabled: true
     image:
       repository: gudari/hadoop
-      tag: 2.10.1
-      pullPolicy: Always
+      tag: 3.2.2
+      pullPolicy: IfNotPresent
     replicas: 3
     annotations: {}
     antiAffinity: "soft"
@@ -306,6 +324,9 @@ yarn:
                 - "rpi-slave-2"
                 - "rpi-slave-3"
                 - "rpi-slave-4"
+    securityContext:
+      runAsUser: 1000
+      fsGroup: 1000
     pdbMinAvailable: 0
     resources:
       requests:
@@ -330,8 +351,8 @@ yarn:
     enabled: true
     image:
       repository: gudari/hadoop
-      tag: 2.10.1
-      pullPolicy: Always
+      tag: 3.2.2
+      pullPolicy: IfNotPresent
     replicas: 1
     annotations: {}
     antiAffinity: "soft"
@@ -345,6 +366,9 @@ yarn:
                 operator: In
                 values:
                 - "rpi-slave-1"
+    securityContext:
+      runAsUser: 1000
+      fsGroup: 1000
     pdbMinAvailable: 0
     resources:
       requests:
@@ -377,7 +401,7 @@ tez:
     image:
       repository: gudari/tez-ui
       tag: 0.10.0-arm64
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
     antiAffinity: "soft"
     replicas: 1
     pdbMinAvailable: 0

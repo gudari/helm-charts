@@ -62,6 +62,10 @@ spec:
                   release: {{ .Release.Name | quote }}
                   component: hdfs-namenode
         {{- end }}
+{{- if .Values.hdfs.nameNode.securityContext }}
+      securityContext:
+{{ toYaml .Values.hdfs.nameNode.securityContext | indent 8 }}
+{{- end }}
       terminationGracePeriodSeconds: 0
       containers:
       - name: hdfs-namenode

@@ -62,6 +62,10 @@ spec:
                   release: {{ .Release.Name | quote }}
                   component: yarn-timelineserver
         {{- end }}
+{{- if .Values.yarn.timeLineServer.securityContext }}
+      securityContext:
+{{ toYaml .Values.yarn.timeLineServer.securityContext | indent 8 }}
+{{- end }}
       terminationGracePeriodSeconds: 0
       containers:
       - name: yarn-timelineserver
