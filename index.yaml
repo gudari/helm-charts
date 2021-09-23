@@ -52,6 +52,68 @@ entries:
     urls:
     - https://github.com/gudari/helm-charts/releases/download/ingress-nginx-3.33.0/ingress-nginx-3.33.0.tgz
     version: 3.33.0
+  jenkins:
+  - apiVersion: v2
+    appVersion: 2.235.4
+    created: "2021-09-23T15:29:54.641859482Z"
+    dependencies:
+    - condition: jenkins.enabled
+      name: jenkins
+      repository: https://charts.jenkins.io
+      version: 3.4.0
+    description: MetalLB is a load-balancer implementation for bare metal Kubernetes
+      clusters, using standard routing protocols.
+    digest: f452ef05295829bbeb410e129dbba00af7a94511ea3c54ab402ddcd232452d50
+    home: https://jenkins.io/
+    icon: https://wiki.jenkins-ci.org/download/attachments/2916393/logo.png
+    name: jenkins
+    sources:
+    - https://github.com/jenkinsci/jenkins
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/jenkins-3.4.0/jenkins-3.4.0.tgz
+    version: 3.4.0
+  kube-prometheus-stack:
+  - apiVersion: v2
+    appVersion: 0.48.1
+    created: "2021-09-23T15:29:54.794646261Z"
+    dependencies:
+    - condition: kube-prometheus-stack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 16.13.0
+    description: Provides easy monitoring definitions for Kubernetes services, and
+      deployment and management of Prometheus instances.
+    digest: a3ee7bb15e4df60f9d7fc3ac610ccef87215e5638e81f78594f5034806d03c34
+    home: https://prometheus-operator.dev/
+    icon: https://raw.githubusercontent.com/prometheus/prometheus.github.io/master/assets/prometheus_logo-cb55bb5c346.png
+    name: kube-prometheus-stack
+    sources:
+    - https://github.com/prometheus-operator/prometheus-operator
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/kube-prometheus-stack-16.13.0/kube-prometheus-stack-16.13.0.tgz
+    version: 16.13.0
+  mariadb:
+  - apiVersion: v2
+    appVersion: 10.5.10
+    created: "2021-09-23T15:29:54.911244637Z"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami/
+      version: 9.3.14
+    description: Fast, reliable, scalable, and easy to use open-source relational
+      database system. MariaDB Server is intended for mission-critical, heavy-load
+      production systems as well as for embedding into mass-deployed software. Highly
+      available MariaDB cluster.
+    digest: e8494d2eaf351d33596254c250e2f0ff8a1de73a532c8a24ab4299cae0a7036a
+    home: https://mariadb.org/
+    icon: https://mariadb.org/wp-content/uploads/2019/01/mariadb_org_rgb_v.png
+    name: mariadb
+    sources:
+    - https://github.com/MariaDB/server
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/mariadb-9.3.14/mariadb-9.3.14.tgz
+    version: 9.3.14
   metallb:
   - apiVersion: v2
     appVersion: 0.10.2
@@ -91,4 +153,4 @@ entries:
     urls:
     - https://github.com/gudari/helm-charts/releases/download/pi-hole-1.9.1/pi-hole-1.9.1.tgz
     version: 1.9.1
-generated: "2021-06-17T12:55:14.305859315Z"
+generated: "2021-09-23T15:29:54.911250437Z"
