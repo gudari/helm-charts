@@ -7,8 +7,7 @@ cert-manager:
 
   image:
     repository: quay.io/jetstack/cert-manager-controller
-    tag: v1.4.0
-
+    tag: v1.6.1
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -29,8 +28,7 @@ cert-manager:
   webhook:
     image:
       repository: quay.io/jetstack/cert-manager-webhook
-      tag: v1.4.0
-
+      tag: v1.6.1
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -51,7 +49,7 @@ cert-manager:
   cainjector:
     image:
       repository: quay.io/jetstack/cert-manager-cainjector
-      tag: v1.4.0
+      tag: v1.6.1
   
     affinity:
       nodeAffinity:

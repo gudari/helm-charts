@@ -1,0 +1,35 @@
+{{- if .Values.serviceMonitor.ingressNginx.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kube-prometheus-stack.fullname" . }}-ingress-nginx
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "kube-prometheus-stack.name" . }}-ingress-nginx
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
+spec:
+  jobLabel: jobLabel
+  selector:
+    matchLabels:
+{{ tpl (toYaml .Values.serviceMonitor.ingressNginx.matchLabels | indent 6) . }}
+  namespaceSelector:
+    matchNames:
+{{ tpl (toYaml .Values.serviceMonitor.ingressNginx.matchNameSpaces | indent 6) . }}
+  endpoints:
+  - port: {{ .Values.serviceMonitor.ingressNginx.port }}
+    {{- if .Values.serviceMonitor.ingressNginx.interval}}
+    interval: {{ .Values.serviceMonitor.ingressNginx.interval }}
+    {{- end }}
+    {{- if .Values.serviceMonitor.ingressNginx.proxyUrl }}
+    proxyUrl: {{ .Values.serviceMonitor.ingressNginx.proxyUrl}}
+    {{- end }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+{{- if .Values.serviceMonitor.ingressNginx.metricRelabelings }}
+    metricRelabelings:
+{{ tpl (toYaml .Values.serviceMonitor.ingressNginx.metricRelabelings | indent 4) . }}
+{{- end }}
+{{- if .Values.serviceMonitor.ingressNginx.relabelings }}
+    relabelings:
+{{ tpl (toYaml .Values.serviceMonitor.ingressNginx.relabelings | indent 4) . }}
+{{- end }}
+{{- end }}

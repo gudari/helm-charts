@@ -4,11 +4,11 @@ engine: gotpl
 name: ingress-nginx
 sources:
   - https://github.com/kubernetes/ingress-nginx
-version: 3.33.0
-appVersion: 0.47.0
+version: 3.39.0
+appVersion: v0.49.3
 home: https://kubernetes.github.io/ingress-nginx/
 dependencies:
   - name: ingress-nginx
-    version: "3.33.0"
+    version: "3.39.0"
     repository: https://kubernetes.github.io/ingress-nginx
     condition: ingress-nginx.enabled

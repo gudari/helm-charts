@@ -2,12 +2,14 @@ pihole:
   enabled: true
   image:
     repository: "pihole/pihole"
-    tag: 2021.10
+    tag: "2021.10.1"
   serviceDns:
     type: LoadBalancer
     loadBalancerIP: "192.168.1.200"
     annotations:
       metallb.universe.tf/allow-shared-ip: pihole-svc
+  serviceDhcp:
+    enabled: false
   ingress:
     enabled: true
     hosts:
@@ -34,6 +36,7 @@ pihole:
               operator: In
               values:
               - "true"
+  adminPassword: "admin"
   dnsmasq:
     customDnsEntries:
       - address=/.gudari.io/192.168.1.201

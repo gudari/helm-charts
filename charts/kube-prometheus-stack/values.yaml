@@ -1,4 +1,18 @@
+customDashboards:
+  enabled: true
+serviceMonitor:
+  ingressNginx:
+    enabled: true
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/instance: rpi-ingress-nginx
+      app.kubernetes.io/component: controller
+    matchNameSpaces:
+      - rpi-controlplane
+    port: metrics
+
 kube-prometheus-stack:
+  enabled: true
   defaultRules:
     create: true
     rules:
@@ -13,14 +27,16 @@ kube-prometheus-stack:
     enabled: false
   alertmanager:
     enabled: false
+  kubeProxy:
+    enabled: false
 
   prometheusOperator:
     image:
       repository: quay.io/prometheus-operator/prometheus-operator
-      tag: v0.48.1
+      tag: v0.50.0
     prometheusConfigReloaderImage:
       repository: quay.io/prometheus-operator/prometheus-config-reloader
-      tag: v0.48.1
+      tag: v0.50.0
     resources:
       requests:
         cpu: 50m
@@ -41,7 +57,7 @@ kube-prometheus-stack:
   kube-state-metrics:
     image:
       repository: k8s.gcr.io/kube-state-metrics/kube-state-metrics
-      tag: v2.0.0
+      tag: v2.2.0
     resources:
       requests:
         cpu: 50m
@@ -63,7 +79,7 @@ kube-prometheus-stack:
     enabled: true
     image:
       repository: grafana/grafana
-      tag: 8.0.3
+      tag: 8.2.1
     replicas: 1
     grafana.ini:
       server:
@@ -86,7 +102,7 @@ kube-prometheus-stack:
     sidecar:
       image:
         repository: quay.io/kiwigrid/k8s-sidecar
-        tag: 1.12.2
+        tag: 1.14.2
       notifiers:
         enabled: false
     adminPassword: prom-operator
@@ -124,13 +140,13 @@ kube-prometheus-stack:
     enabled: true
     image:
       repository: quay.io/prometheus/node-exporter
-      tag: v1.1.2
+      tag: v1.2.2
     resources:
       requests:
         cpu: 50m
         memory: 100Mi
       limits:
-        cpu: 60m
+        cpu: 50m
         memory: 100Mi
 
   prometheus:
@@ -150,7 +166,7 @@ kube-prometheus-stack:
       retention: 3d
       image:
         repository: quay.io/prometheus/prometheus
-        tag: v2.27.1
+        tag: v2.28.1
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

@@ -5,11 +5,11 @@ engine: gotpl
 name: metallb
 sources:
   - https://github.com/metallb/metallb
-version: 0.10.2
-appVersion: 0.10.2
+version: 0.11.0
+appVersion: v0.11.0
 home: https://metallb.universe.tf/
 dependencies:
   - name: metallb
-    version: "0.10.2"
+    version: "0.11.0"
     repository: https://metallb.github.io/metallb
     condition: metallb.enabled

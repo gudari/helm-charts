@@ -5,11 +5,11 @@ engine: gotpl
 name: cert-manager
 sources:
   - https://github.com/jetstack/cert-manager
-version: 1.4.0
-appVersion: 1.4.0
+version: 1.6.1
+appVersion: 1.6.1
 home: https://cert-manager.io/
 dependencies:
   - name: cert-manager
-    version: "v1.4.0"
+    version: "v1.6.1"
     repository: https://charts.jetstack.io
     condition: cert-manager.enabled
