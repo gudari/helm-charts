@@ -32,8 +32,8 @@ spec:
     {{- if .Values.affinity }}
 {{ toYaml .Values.affinity | indent 8 }}
     {{- end }}
-        podAntiAffinity:
         {{- if eq .Values.podAntiAffinity "hard" }}
+        podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -42,6 +42,7 @@ spec:
                 release: {{ .Release.Name | quote }}
                 component: zookeeper
         {{- else if eq .Values.podAntiAffinity "soft" }}
+        podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
@@ -52,6 +53,11 @@ spec:
                   release: {{ .Release.Name | quote }}
                   component: zookeeper
         {{- end }}
+{{- if .Values.securityContext }}
+      securityContext:
+{{ toYaml .Values.securityContext | indent 8 }}
+{{- end }}
+      terminationGracePeriodSeconds: 60
       containers:
       - name: zookeeper
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -63,28 +69,33 @@ spec:
         - name: {{ $key }}
           containerPort: {{ $service.port }}
 {{- end }}
+        startupProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - "echo ruok | nc 127.0.0.1 {{ .Values.services.client.port }}"
+{{- with .Values.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         livenessProbe:
           exec:
             command:
               - sh
               - -c
               - "zkServer.sh status"
-          initialDelaySeconds: 20
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 3
-          successThreshold: 1
+{{- with .Values.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         readinessProbe:
           exec:
             command:
               - sh
               - -c
               - "echo ruok | nc 127.0.0.1 {{ .Values.services.client.port }}"
-          initialDelaySeconds: 20
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 3
-          successThreshold: 1
+{{- with .Values.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         envFrom:
         - configMapRef:
             name: {{ include "zookeeper.fullname" . }}-configmap

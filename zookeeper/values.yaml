@@ -5,7 +5,7 @@ updateStrategy:
 
 image:
   repository: gudari/zookeeper
-  tag: 3.6.1-arm64
+  tag: 3.7.0-arm64
   pullPolicy: IfNotPresent
 
 podAntiAffinity: "soft"
@@ -18,6 +18,9 @@ affinity:
             operator: In
             values:
             - "rpi-slave-1"
+securityContext:
+  runAsUser: 1000
+  fsGroup: 1000
 
 services:
   client:
@@ -36,6 +39,25 @@ services:
     port: 8080
     targetPort: 8080
     protocol: TCP
+
+startupProbe:
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+  periodSeconds: 30
+  successThreshold: 1
+livenessProbe:
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 6
+  periodSeconds: 30
+  successThreshold: 1
+readinessProbe:
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 6
+  periodSeconds: 30
+  successThreshold: 1
 
 resources:
   requests:
