@@ -47,6 +47,24 @@ hdfs:
       ipc:
         containerPort: 8020
         protocol: TCP
+    startupProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 30
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
     persistence:
       enabled: true
       accessMode: ReadWriteOnce
@@ -109,6 +127,24 @@ hdfs:
       ipc:
         containerPort: 50020
         protocol: TCP
+    startupProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 30
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
     persistence:
       enabled: true
       accessMode: ReadWriteOnce
@@ -173,15 +209,15 @@ hdfs:
       annotations:
         metallb.universe.tf/allow-shared-ip: nfs-gateway
       ports:
-        nfs-tcp:
+        nfstcp:
           port: 2049
           targetPort: 2049
           protocol: TCP
-        mountd-tcp:
+        mountdtcp:
           port: 4242
           targetPort: 4242
           protocol: TCP
-        portmapper-tcp:
+        portmappertcp:
           port: 111
           targetPort: 111
           protocol: TCP
@@ -192,18 +228,36 @@ hdfs:
       annotations:
         metallb.universe.tf/allow-shared-ip: nfs-gateway
       ports:
-        nfs-udp:
+        nfsudp:
           port: 2049
           targetPort: 2049
           protocol: UDP
-        mountd-udp:
+        mountdudp:
           port: 4242
           targetPort: 4242
           protocol: UDP
-        portmapper-udp:
+        portmapperudp:
           port: 111
           targetPort: 111
           protocol: UDP
+    startupProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 30
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
 
 mapred:
   historyServer:
@@ -253,6 +307,24 @@ mapred:
       - secretName: historyserver-tls
         hosts:
         - historyserver.gudari.io
+    startupProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 30
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
 
 yarn:
   resourceManager:
@@ -302,6 +374,24 @@ yarn:
       - secretName: resourcemanager-tls
         hosts:
         - resourcemanager.gudari.io
+    startupProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 30
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
 
   nodeManager:
     enabled: true
@@ -346,6 +436,24 @@ yarn:
       api:
         containerPort: 8042
         protocol: TCP
+    startupProbe:
+      initialDelaySeconds: 60
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 30
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
 
   timeLineServer:
     enabled: true
@@ -394,20 +502,49 @@ yarn:
       - secretName: timelineserver-tls
         hosts:
         - timelineserver.gudari.io
+    startupProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 30
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 30
+      successThreshold: 1
 
 tez:
   ui:
     enabled: false
     image:
       repository: gudari/tez-ui
-      tag: 0.10.0-arm64
+      tag: 0.10.1-arm64
       pullPolicy: IfNotPresent
-    antiAffinity: "soft"
     replicas: 1
+    annotations: {}
+    antiAffinity: "soft"
+    nodeSelector: {}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - "rpi-slave-1"
+    securityContext:
+      runAsUser: 1000
+      fsGroup: 1000
     pdbMinAvailable: 0
-
-    # CPU and memory resources allocated to each node manager pod.
-    # This should be tuned to fit your workload.
     resources:
       requests:
         memory: "512Mi"
@@ -415,8 +552,41 @@ tez:
       limits:
         memory: "512Mi"
         cpu: "450m"
-
-    enableIngress: true
+    publishNotReadyAddresses: true
+    ports:
+      http:
+        containerPort: 8080
+        protocol: TCP
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      path: /
+      hosts:
+      - tez-ui.gudari.io
+      extraPaths: []
+      tls:
+      - secretName: tez-tls
+        hosts:
+        - tez-ui.gudari.io
+    startupProbe:
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      periodSeconds: 10
+      successThreshold: 1
+    livenessProbe:
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 10
+      successThreshold: 1
+    readinessProbe:
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      failureThreshold: 6
+      periodSeconds: 10
+      successThreshold: 1
 
 persistence:
   nameNode:

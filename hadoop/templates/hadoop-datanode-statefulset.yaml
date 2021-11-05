@@ -66,7 +66,7 @@ spec:
       securityContext:
 {{ toYaml .Values.hdfs.dataNode.securityContext | indent 8 }}
 {{- end }}
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 60
       containers:
       - name: hdfs-datanode
         image: "{{ .Values.hdfs.dataNode.image.repository }}:{{ .Values.hdfs.dataNode.image.tag }}"
@@ -78,18 +78,27 @@ spec:
         - name: {{ $key }}
 {{ toYaml $port | indent 10 }}
 {{- end }}
+        startupProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.hdfs.dataNode.ports.http.containerPort }}
+{{- with .Values.hdfs.dataNode.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /
             port: {{ .Values.hdfs.dataNode.ports.http.containerPort }}
-          initialDelaySeconds: 60
-          timeoutSeconds: 2
+{{- with .Values.hdfs.dataNode.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         livenessProbe:
           httpGet:
             path: /
             port: {{ .Values.hdfs.dataNode.ports.http.containerPort }}
-          initialDelaySeconds: 60
-          timeoutSeconds: 2
+{{- with .Values.hdfs.dataNode.livenessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         env:
         - name: SERVICE_PRECONDITION
           value: "{{ include "hadoop.fullname" . }}-hdfs-namenode-0.{{ include "hadoop.fullname" . }}-hdfs-namenode.{{ .Release.Namespace }}.svc.cluster.local:50070"

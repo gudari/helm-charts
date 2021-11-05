@@ -13,8 +13,12 @@ spec:
   publishNotReadyAddresses: true
 {{- end }}
   ports:
-  - port: 8080
-    name: web
+  {{- range $key, $port := .Values.tez.ui.ports }}
+  - name: {{ $key }}
+    port: {{ $port.containerPort }}
+    targetPort: {{ $key }}
+    protocol: {{ $port.protocol }}
+  {{- end }}
   clusterIP: None
   selector:
     app: {{ include "hadoop.name" . }}

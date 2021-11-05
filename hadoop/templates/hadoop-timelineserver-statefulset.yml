@@ -38,8 +38,8 @@ spec:
       {{ toYaml . | indent 8 }}
     {{- end }}
       affinity:
-    {{- if .Values.hdfs.nameNode.affinity }}
-{{ toYaml .Values.hdfs.nameNode.affinity | indent 8 }}
+    {{- if .Values.yarn.timeLineServer.affinity }}
+{{ toYaml .Values.yarn.timeLineServer.affinity | indent 8 }}
     {{- end }}
         {{- if eq .Values.yarn.timeLineServer.antiAffinity "hard" }}
         podAntiAffinity:
@@ -66,7 +66,7 @@ spec:
       securityContext:
 {{ toYaml .Values.yarn.timeLineServer.securityContext | indent 8 }}
 {{- end }}
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 60
       containers:
       - name: yarn-timelineserver
         image: "{{ .Values.yarn.timeLineServer.image.repository }}:{{ .Values.yarn.timeLineServer.image.tag }}"
@@ -78,18 +78,27 @@ spec:
         - name: {{ $key }}
 {{ toYaml $port | indent 10 }}
 {{- end }}
+        startupProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.yarn.timeLineServer.ports.http.containerPort }}
+{{- with .Values.yarn.timeLineServer.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /
             port: {{ .Values.yarn.timeLineServer.ports.http.containerPort }}
-          initialDelaySeconds: 120
-          timeoutSeconds: 2
+{{- with .Values.yarn.timeLineServer.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         livenessProbe:
           httpGet:
             path: /
             port: {{ .Values.yarn.timeLineServer.ports.http.containerPort }}
-          initialDelaySeconds: 120
-          timeoutSeconds: 2
+{{- with .Values.yarn.timeLineServer.livenessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         envFrom:
         - configMapRef:
             name: {{ include "hadoop.fullname" . }}-configmap

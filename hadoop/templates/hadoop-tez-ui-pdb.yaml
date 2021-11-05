@@ -1,0 +1,18 @@
+{{- if .Values.tez.ui.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "hadoop.fullname" . }}-tez-ui
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: tez-ui
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "hadoop.name" . }}
+      release: {{ .Release.Name }}
+      component: tez-ui
+  minAvailable: {{ .Values.tez.ui.pdbMinAvailable }}
+{{- end }}

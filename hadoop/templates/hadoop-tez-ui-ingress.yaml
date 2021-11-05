@@ -1,4 +1,5 @@
 {{- if .Values.tez.ui.enabled }}
+{{- if .Values.tez.ui.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -8,19 +9,44 @@ metadata:
     chart: {{ include "hadoop.chart" . }}
     release: {{ .Release.Name }}
     component: tez-ui
+{{- with .Values.tez.ui.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
+{{- if .Values.tez.ui.ingress.tls }}
+  tls:
+{{ toYaml .Values.tez.ui.ingress.tls | indent 4 }}
+{{- end }}
   rules:
-  - host: tez-ui.gudari.io
+  {{- if .Values.tez.ui.ingress.hosts  }}
+  {{- range .Values.tez.ui.ingress.hosts }}
+  - host: {{ . }}
     http:
+      paths:
+{{ if $.Values.tez.ui.ingress.extraPaths }}
+{{ toYaml $.Values.tez.ui.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - pathType: Prefix
+        path: {{ $.Values.tez.ui.ingress.path }}
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" $ }}-tez-ui
+            port:
+              number: {{ $.Values.tez.ui.ports.http.containerPort }}
+{{- end }}
+{{- else }}
+  - http:
       paths:
       - pathType: Prefix
         backend:
           service:
-            name: {{ include "hadoop.fullname" . }}-tez-ui
+            name: {{ include "hadoop.fullname" $ }}-tez-ui
             port:
-              number: 8080
-        path: /
-  tls:
-  - hosts:
-    - tez-ui.gudari.io
-{{- end -}}
+              number: {{ $.Values.tez.ui.ports.http.containerPort }}
+      {{- if $.Values.tez.ui.ingress.path }}
+        path: {{ $.Values.tez.ui.ingress.path }}
+      {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

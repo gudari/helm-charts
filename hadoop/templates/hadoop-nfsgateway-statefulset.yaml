@@ -31,8 +31,11 @@ spec:
         component: hdfs-nfsgateway
     spec:
       affinity:
-        podAntiAffinity:
+    {{- if .Values.hdfs.nfsGateway.affinity }}
+{{ toYaml .Values.hdfs.nfsGateway.affinity | indent 8 }}
+    {{- end }}
         {{- if eq .Values.hdfs.nfsGateway.antiAffinity "hard" }}
+        podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -41,6 +44,7 @@ spec:
                 release: {{ .Release.Name | quote }}
                 component: hdfs-nfsgateway
         {{- else if eq .Values.hdfs.nfsGateway.antiAffinity "soft" }}
+        podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
@@ -55,7 +59,7 @@ spec:
       securityContext:
 {{ toYaml .Values.hdfs.nfsGateway.securityContext | indent 8 }}
 {{- end }}
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 60
       containers:
       - name: hdfs-nfsgateway
         image: "{{ .Values.hdfs.nfsGateway.image.repository }}:{{ .Values.hdfs.nfsGateway.image.tag }}"
@@ -63,7 +67,7 @@ spec:
         resources:
 {{ toYaml .Values.hdfs.nfsGateway.resources | indent 10 }}
         ports:
-        {{- range $key, $service := .Values.hdfs.nfsGateway.serviceTCP.ports }}
+      {{- range $key, $service := .Values.hdfs.nfsGateway.serviceTCP.ports }}
         - name: {{ $key }}
           containerPort: {{ $service.targetPort }}
           protocol: {{ $service.protocol }}
@@ -72,7 +76,25 @@ spec:
         - name: {{ $key }}
           containerPort: {{ $service.targetPort }}
           protocol: {{ $service.protocol }}
-        {{- end }}
+      {{- end }}
+        startupProbe:
+          tcpSocket:
+            port: {{ .Values.hdfs.nfsGateway.serviceTCP.ports.nfstcp.port }}
+{{- with .Values.hdfs.nfsGateway.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.hdfs.nfsGateway.serviceTCP.ports.nfstcp.port }}
+{{- with .Values.hdfs.nfsGateway.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.hdfs.nfsGateway.serviceTCP.ports.nfstcp.port }}
+{{- with .Values.hdfs.nfsGateway.livenessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         envFrom:
         - configMapRef:
             name: {{ include "hadoop.fullname" . }}-configmap

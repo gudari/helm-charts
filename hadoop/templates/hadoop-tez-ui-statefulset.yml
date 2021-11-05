@@ -5,6 +5,9 @@ metadata:
   name: {{ include "hadoop.fullname" . }}-tez-ui
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.tez.ui.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   labels:
     app: {{ include "hadoop.name" . }}
     chart: {{ include "hadoop.chart" . }}
@@ -22,14 +25,24 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/hadoop-configmap.yaml") . | sha256sum }}
+{{- with .Values.tez.ui.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       labels:
         app: {{ include "hadoop.name" . }}
         release: {{ .Release.Name }}
         component: tez-ui
     spec:
+    {{- with .Values.tez.ui.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 8 }}
+    {{- end }}
       affinity:
-        podAntiAffinity:
+    {{- if .Values.tez.ui.affinity }}
+{{ toYaml .Values.tez.ui.affinity | indent 8 }}
+    {{- end }}
         {{- if eq .Values.tez.ui.antiAffinity "hard" }}
+        podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -38,6 +51,7 @@ spec:
                 release: {{ .Release.Name | quote }}
                 component: tez-ui
         {{- else if eq .Values.tez.ui.antiAffinity "soft" }}
+        podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
@@ -48,28 +62,43 @@ spec:
                   release: {{ .Release.Name | quote }}
                   component: tez-ui
         {{- end }}
-      terminationGracePeriodSeconds: 0
+{{- if .Values.tez.ui.securityContext }}
+      securityContext:
+{{ toYaml .Values.tez.ui.securityContext | indent 8 }}
+{{- end }}
+      terminationGracePeriodSeconds: 60
       containers:
       - name: tez-ui
         image: "{{ .Values.tez.ui.image.repository }}:{{ .Values.tez.ui.image.tag }}"
         imagePullPolicy: {{ .Values.tez.ui.image.pullPolicy | quote }}
-        ports:
-        - containerPort: 8080
-          name: web
         resources:
 {{ toYaml .Values.tez.ui.resources | indent 10 }}
+        ports:
+{{- range $key, $port := .Values.tez.ui.ports }}
+        - name: {{ $key }}
+{{ toYaml $port | indent 10 }}
+{{- end }}
+        startupProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.tez.ui.ports.http.containerPort }}
+{{- with .Values.tez.ui.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /health
-            port: 8080
-          initialDelaySeconds: 120
-          timeoutSeconds: 2
+            port: {{ .Values.tez.ui.ports.http.containerPort }}
+{{- with .Values.tez.ui.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         livenessProbe:
           httpGet:
             path: /health
-            port: 8080
-          initialDelaySeconds: 120
-          timeoutSeconds: 2
+            port: {{ .Values.tez.ui.ports.http.containerPort }}
+{{- with .Values.tez.ui.livenessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         envFrom:
         - configMapRef:
             name: {{ include "hadoop.fullname" . }}-configmap

@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 description: The Apache Hadoop Version 3.2.1.
 name: hadoop
 version: 0.0.1

@@ -66,7 +66,7 @@ spec:
       securityContext:
 {{ toYaml .Values.hdfs.nameNode.securityContext | indent 8 }}
 {{- end }}
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 60
       containers:
       - name: hdfs-namenode
         image: "{{ .Values.hdfs.nameNode.image.repository }}:{{ .Values.hdfs.nameNode.image.tag }}"
@@ -78,18 +78,27 @@ spec:
         - name: {{ $key }}
 {{ toYaml $port | indent 10 }}
 {{- end }}
+        startupProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.hdfs.nameNode.ports.http.containerPort }}
+{{- with .Values.hdfs.nameNode.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         readinessProbe:
           httpGet:
             path: /
             port: {{ .Values.hdfs.nameNode.ports.http.containerPort }}
-          initialDelaySeconds: 90
-          timeoutSeconds: 2
+{{- with .Values.hdfs.nameNode.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         livenessProbe:
           httpGet:
             path: /
             port: {{ .Values.hdfs.nameNode.ports.http.containerPort }}
-          initialDelaySeconds: 90
-          timeoutSeconds: 2
+{{- with .Values.hdfs.nameNode.livenessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         envFrom:
         - configMapRef:
             name: {{ include "hadoop.fullname" . }}-configmap
