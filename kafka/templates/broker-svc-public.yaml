@@ -1,4 +1,5 @@
-
+{{- if .Values.broker.enabled }}
+{{- if .Values.broker.service.outside.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,16 +10,16 @@ metadata:
     release: {{ .Release.Name }}
     component: broker
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.broker.service.outside.type }}
   ports:
-  - name: broker  
-    port: 31090
-    targetPort: 31090
-    protocol: TCP
-{{- if .Values.service.loadBalancerIP }}
-  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
-{{- end }}
+  - name: outside
+    port: {{ .Values.broker.ports.outside.containerPort }}
+    targetPort: {{ .Values.broker.ports.outside.containerPort }}
+    protocol: {{ .Values.broker.ports.outside.protocol }}
+  loadBalancerIP: {{ .Values.broker.service.outside.loadBalancerIP }}
   selector:
     app: {{ include "kafka.name" . }}
     release: {{ .Release.Name }}
     component: broker
+{{- end }}
+{{- end }}

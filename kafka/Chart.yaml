@@ -1,8 +1,8 @@
-apiVersion: v1
-description: The Apache Kafka Version 2.6.0.
+apiVersion: v2
+description: The Apache Kafka.
 name: kafka
 version: 0.0.1
-appVersion: 2.6.0
+appVersion: 2.8.1
 home: https://kafka.apache.org/
 sources:
 - https://github.com/apache/kafka

@@ -1,9 +1,13 @@
+{{- if .Values.broker.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "kafka.fullname" . }}-broker
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/kafka-configmap.yaml") . | sha256sum }}
+{{- with .Values.broker.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   labels:
     app: {{ include "kafka.name" . }}
     chart: {{ include "kafka.chart" . }}
@@ -21,17 +25,20 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/kafka-configmap.yaml") . | sha256sum }}
+{{- with .Values.broker.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       labels:
         app: {{ include "kafka.name" . }}
         release: {{ .Release.Name }}
         component: broker
     spec:
       affinity:
-    {{- if .Values.affinity }}
-{{ toYaml .Values.affinity | indent 8 }}
+    {{- if .Values.broker.affinity }}
+{{ toYaml .Values.broker.affinity | indent 8 }}
     {{- end }}
         podAntiAffinity:
-        {{- if eq .Values.antiAffinity "hard" }}
+        {{- if eq .Values.broker.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
@@ -39,7 +46,7 @@ spec:
                 app:  {{ include "kafka.name" . }}
                 release: {{ .Release.Name | quote }}
                 component: broker
-        {{- else if eq .Values.antiAffinity "soft" }}
+        {{- else if eq .Values.broker.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
@@ -50,13 +57,72 @@ spec:
                   release: {{ .Release.Name | quote }}
                   component: broker
         {{- end }}
-      terminationGracePeriodSeconds: 0
+{{- if .Values.broker.securityContext }}
+      securityContext:
+{{ toYaml .Values.broker.securityContext | indent 8 }}
+{{- end }}
+      terminationGracePeriodSeconds: 60
       containers:
       - name: broker
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.broker.image.repository }}:{{ .Values.broker.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         resources:
 {{ toYaml .Values.broker.resources | indent 10 }}
+        ports:
+{{- range $key, $port := .Values.broker.ports }}
+        - name: {{ $key }}
+{{ toYaml $port | indent 10 }}
+{{- end }}
+        startupProbe:
+          tcpSocket:
+            port: {{ .Values.broker.ports.client.containerPort }}
+{{- with .Values.broker.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.broker.ports.client.containerPort }}
+{{- with .Values.broker.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.broker.ports.client.containerPort }}
+{{- with .Values.broker.livenessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
         envFrom:
         - configMapRef:
             name: {{ include "kafka.fullname" . }}-configmap
+{{- range $key, $value := .Values.broker.persistence.volumes }}
+        volumeMounts:
+        - name: {{ $key }}
+          mountPath: {{ $value.mountPath }}/logs
+{{- end }}
+{{- if .Values.broker.persistence.enabled }}
+  volumeClaimTemplates:
+  {{- range $key, $value := .Values.broker.persistence.volumes }}
+  - metadata:
+      name: {{ $key }}
+    spec:
+      accessModes:
+        - {{ $value.accessMode | quote }}
+      resources:
+        requests:
+          storage: {{ $value.size | quote }}
+    {{- if $value.storageClass }}
+      {{- if (eq "-" $value.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ $value.storageClass }}"
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- else }}
+      volumes:
+  {{- range $key, $value := .Values.broker.persistence.volumes }}
+        - name: {{ $key }}
+          emptyDir: {}
+  {{- end }}
+{{- end }}
+{{- end }}

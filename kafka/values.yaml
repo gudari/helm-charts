@@ -2,35 +2,83 @@
 # See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
 image:
   repository: gudari/kafka
-  tag: 2.6.0-arm64
+  tag: 2.8.1
   pullPolicy: IfNotPresent
 
 # The version of the hadoop libraries being used in the image.
-sparkVersion: 2.6.0
-
-# Select antiAffinity as either hard or soft, default is soft
-antiAffinity: "soft"
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-        - matchExpressions:
-          - key: "kubernetes.io/hostname"
-            operator: In
-            values:
-            - "rpi-slave-1"
+kafkaVersion: 2.8.1
 
 broker:
+  enabled: true
+  image:
+    repository: gudari/kafka
+    tag: 2.8.1-arm64
+    pullPolicy: IfNotPresent
   replicas: 1
+  annotations: {}
+  antiAffinity: "soft"
+  nodeSelector: {}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/hostname"
+              operator: In
+              values:
+              - "rpi-slave-2"
+              - "rpi-slave-3"
+              - "rpi-slave-4"
+  securityContext:
+    runAsUser: 1000
+    fsGroup: 1000
   pdbMinAvailable: 0
   resources:
     requests:
-      memory: "2Gi"
-      cpu: "1"
+      memory: "1Gi"
+      cpu: "500m"
     limits:
-      memory: "2Gi"
-      cpu: "1"
-
-service:
-  loadBalancerIP: 192.168.1.205
-  type: LoadBalancer
+      memory: "1Gi"
+      cpu: "500m"
+  publishNotReadyAddresses: true
+  ports:
+    client:
+      containerPort: 9092
+      protocol: TCP
+    internal:
+      containerPort: 9093
+      protocol: TCP
+    external:
+      containerPort: 9094
+      protocol: TCP
+  startupProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+    periodSeconds: 30
+    successThreshold: 1
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+    periodSeconds: 30
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+    periodSeconds: 30
+    successThreshold: 1
+  persistence:
+    enabled: true
+    volumes:
+      datalog:
+        mountPath: /data
+        accessMode: ReadWriteOnce
+        size: 5Gi
+  service:
+    outside:
+      enable: true
+      loadBalancerIP: 192.168.1.205
+      type: LoadBalancer
+      domain: gudari.io
