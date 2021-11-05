@@ -1,0 +1,11 @@
+apiVersion: v1
+description: ttyd - Share your terminal over the web.
+name: ttyd
+version: 0.0.1
+appVersion: 1.6.3
+home: https://tsl0922.github.io/ttyd/
+sources:
+- https://github.com/tsl0922/ttyd
+maintainers:
+- name: gudari
+  email: aartola1986@gmail.com

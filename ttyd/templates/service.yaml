@@ -1,0 +1,20 @@
+
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ttyd.fullname" . }}-ttyd
+  labels:
+    app: {{ include "ttyd.name" . }}
+    chart: {{ include "ttyd.chart" . }}
+    release: {{ .Release.Name }}
+    component: ttyd-namenode
+spec:
+  ports:
+  - name: web
+    port: 7681
+    protocol: TCP
+  selector:
+    app: {{ include "ttyd.name" . }}
+    release: {{ .Release.Name }}
+    component: ttyd

@@ -1,0 +1,52 @@
+{{- if .Values.enabled }}
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ttyd.fullname" . }}-ttyd
+  labels:
+    app: {{ include "ttyd.name" . }}
+    chart: {{ include "ttyd.chart" . }}
+    release: {{ .Release.Name }}
+    component: ttyd
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingress.tls }}
+  tls:
+{{ toYaml .Values.ingress.tls | indent 4 }}
+{{- end }}
+  rules:
+  {{- if .Values.ingress.hosts  }}
+  {{- range .Values.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+{{ if $.Values.ingress.extraPaths }}
+{{ toYaml $.Values.ingress.extraPaths | indent 10 }}
+{{- end }}
+      - pathType: Prefix
+        path: {{ $.Values.ingress.path }}
+        backend:
+          service:
+            name: {{ include "ttyd.fullname" $ }}-ttyd
+            port:
+              number: {{ $.Values.ports.http.containerPort }}
+{{- end }}
+{{- else }}
+  - http:
+      paths:
+      - pathType: Prefix
+        backend:
+          service:
+            name: {{ include "ttyd.fullname" . }}-ttyd
+            port:
+              number: {{ $.Values.tez.ui.ports.http.containerPort }}
+      {{- if $.Values.ingress.path }}
+        path: {{ $.Values.ingress.path }}
+      {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

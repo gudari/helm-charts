@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ttyd.fullname" . }}-ttyd
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+{{- with .Values.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+  labels:
+    app: {{ include "ttyd.name" . }}
+    chart: {{ include "ttyd.chart" . }}
+    release: {{ .Release.Name }}
+    component: ttyd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ include "ttyd.name" . }}
+      release: {{ .Release.Name }}
+      component: ttyd
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+{{- with .Values.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      labels:
+        app: {{ include "ttyd.name" . }}
+        release: {{ .Release.Name }}
+        component: ttyd
+    spec:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 8 }}
+    {{- end }}
+      affinity:
+    {{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+        {{- if eq .Values.antiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app:  {{ include "ttyd.name" . }}
+                release: {{ .Release.Name | quote }}
+                component: ttyd
+        {{- else if eq .Values.antiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app:  {{ include "ttyd.name" . }}
+                  release: {{ .Release.Name | quote }}
+                  component: ttyd
+        {{- end }}
+{{- if .Values.securityContext }}
+      securityContext:
+{{ toYaml .Values.securityContext | indent 8 }}
+{{- end }}
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: ttyd
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        ports:
+{{- range $key, $port := .Values.ports }}
+        - name: {{ $key }}
+{{ toYaml $port | indent 10 }}
+{{- end }}
+        startupProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.ports.http.containerPort }}
+{{- with .Values.startupProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.ports.http.containerPort }}
+{{- with .Values.readinessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.ports.http.containerPort }}
+{{- with .Values.livenessProbe }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "ttyd.fullname" . }}-configmap

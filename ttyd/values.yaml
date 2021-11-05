@@ -1,0 +1,67 @@
+enabled: true
+image:
+  repository: gudari/ttyd
+  tag: 1.6.3-hadoop-3.2.2
+  pullPolicy: IfNotPresent #Always
+
+# The version of the hadoop libraries being used in the image.
+ttydVersion: 1.6.3-hadoop-3.2.2
+
+annotations: {}
+antiAffinity: "soft"
+nodeSelector: {}
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: "kubernetes.io/hostname"
+            operator: In
+            values:
+            - "rpi-slave-1"
+securityContext:
+  runAsUser: 1000
+  fsGroup: 1000
+resources:
+  requests:
+    memory: "1024Mi"
+    cpu: "500m"
+  limits:
+    memory: "1024Mi"
+    cpu: "520m"
+publishNotReadyAddresses: true
+ports:
+  http:
+    containerPort: 7681
+    protocol: TCP
+startupProbe:
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+  periodSeconds: 30
+  successThreshold: 1
+livenessProbe:
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 6
+  periodSeconds: 30
+  successThreshold: 1
+readinessProbe:
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 6
+  periodSeconds: 30
+  successThreshold: 1
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  path: /
+  hosts:
+  - ttyd.gudari.io
+  extraPaths: []
+  tls:
+  - secretName: ttyd-tls
+    hosts:
+    - ttyd.gudari.io
