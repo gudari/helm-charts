@@ -2,6 +2,25 @@ apiVersion: v1
 entries:
   cert-manager:
   - apiVersion: v2
+    appVersion: 1.6.1
+    created: "2021-11-07T11:58:50.70018123Z"
+    dependencies:
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.6.1
+    description: Cert-manager is a Kubernetes add-on to automate the management and
+      issuance of TLS certificates from various issuing sources.
+    digest: 48873441589c64519df19a770065e9d5e23ed6fc9e47afe6b33b94840d88ed59
+    home: https://cert-manager.io/
+    icon: https://raw.githubusercontent.com/jetstack/cert-manager/master/logo/logo.png
+    name: cert-manager
+    sources:
+    - https://github.com/jetstack/cert-manager
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/cert-manager-1.6.1/cert-manager-1.6.1.tgz
+    version: 1.6.1
+  - apiVersion: v2
     appVersion: 1.4.0
     created: "2021-06-17T12:55:13.832684828Z"
     dependencies:
@@ -34,6 +53,24 @@ entries:
     - https://github.com/gudari/helm-charts/releases/download/cm-ca-0.0.1/cm-ca-0.0.1.tgz
     version: 0.0.1
   ingress-nginx:
+  - apiVersion: v2
+    appVersion: v0.49.3
+    created: "2021-11-07T11:58:50.918918255Z"
+    dependencies:
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 3.39.0
+    description: ingress-nginx is an Ingress controller for Kubernetes using NGINX
+      as a reverse proxy and load balancer.
+    digest: bf9341eca4e1aa4cf44461cb481b0a62346e3d703466579015d7e0f4159ec69d
+    home: https://kubernetes.github.io/ingress-nginx/
+    name: ingress-nginx
+    sources:
+    - https://github.com/kubernetes/ingress-nginx
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/ingress-nginx-3.39.0/ingress-nginx-3.39.0.tgz
+    version: 3.39.0
   - apiVersion: v2
     appVersion: 0.47.0
     created: "2021-06-17T12:55:14.058864225Z"
@@ -73,6 +110,25 @@ entries:
     - https://github.com/gudari/helm-charts/releases/download/jenkins-3.4.0/jenkins-3.4.0.tgz
     version: 3.4.0
   kube-prometheus-stack:
+  - apiVersion: v2
+    appVersion: v0.50.0
+    created: "2021-11-07T11:58:51.189848215Z"
+    dependencies:
+    - condition: kube-prometheus-stack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 19.2.2
+    description: Provides easy monitoring definitions for Kubernetes services, and
+      deployment and management of Prometheus instances.
+    digest: 52a7f5659f54eff723394021682cf88dc79aaf8047f2ed0504f3aff47b7c50c7
+    home: https://prometheus-operator.dev/
+    icon: https://raw.githubusercontent.com/prometheus/prometheus.github.io/master/assets/prometheus_logo-cb55bb5c346.png
+    name: kube-prometheus-stack
+    sources:
+    - https://github.com/prometheus-operator/prometheus-operator
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/kube-prometheus-stack-19.2.2/kube-prometheus-stack-19.2.2.tgz
+    version: 19.2.2
   - apiVersion: v2
     appVersion: 0.48.1
     created: "2021-09-23T15:29:54.794646261Z"
@@ -116,6 +172,25 @@ entries:
     version: 9.3.14
   metallb:
   - apiVersion: v2
+    appVersion: v0.11.0
+    created: "2021-11-07T11:58:51.394776132Z"
+    dependencies:
+    - condition: metallb.enabled
+      name: metallb
+      repository: https://metallb.github.io/metallb
+      version: 0.11.0
+    description: MetalLB is a load-balancer implementation for bare metal Kubernetes
+      clusters, using standard routing protocols.
+    digest: f52ac62ce1edd1f43938aa54e2e95aac3db9be1c6945ac59cb810a4900ae8a3a
+    home: https://metallb.universe.tf/
+    icon: https://metallb.universe.tf/images/logo/metallb-white.png
+    name: metallb
+    sources:
+    - https://github.com/metallb/metallb
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/metallb-0.11.0/metallb-0.11.0.tgz
+    version: 0.11.0
+  - apiVersion: v2
     appVersion: 0.10.2
     created: "2021-06-17T12:55:14.177356387Z"
     dependencies:
@@ -136,6 +211,24 @@ entries:
     version: 0.10.2
   pi-hole:
   - apiVersion: v2
+    appVersion: 2021.10.1
+    created: "2021-11-07T11:58:51.49711767Z"
+    dependencies:
+    - condition: pihole.enabled
+      name: pihole
+      repository: https://mojo2600.github.io/pihole-kubernetes/
+      version: 2.5.2
+    description: Network-wide Ad Blocking.
+    digest: 5b0796d19db6d832aea650aed8eaab6d7ed4a9cd0eddc1b5820677d44cee942e
+    home: https://pi-hole.net/
+    icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2018/12/pihole-text-logo-white.png.webp
+    name: pi-hole
+    sources:
+    - https://github.com/pi-hole/pi-hole
+    urls:
+    - https://github.com/gudari/helm-charts/releases/download/pi-hole-2.5.2/pi-hole-2.5.2.tgz
+    version: 2.5.2
+  - apiVersion: v2
     appVersion: 5.8.1
     created: "2021-06-17T12:55:14.305854315Z"
     dependencies:
@@ -153,4 +246,4 @@ entries:
     urls:
     - https://github.com/gudari/helm-charts/releases/download/pi-hole-1.9.1/pi-hole-1.9.1.tgz
     version: 1.9.1
-generated: "2021-09-23T15:29:54.911250437Z"
+generated: "2021-11-07T11:58:51.497143571Z"
