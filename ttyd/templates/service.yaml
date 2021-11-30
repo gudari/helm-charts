@@ -3,17 +3,24 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ttyd.fullname" . }}-ttyd
+  name: {{ include "ttyd.fullname" . }}
   labels:
     app: {{ include "ttyd.name" . }}
     chart: {{ include "ttyd.chart" . }}
     release: {{ .Release.Name }}
     component: ttyd-namenode
 spec:
+  type: ClusterIP
+{{- if .Values.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+{{- end }}
   ports:
-  - name: web
-    port: 7681
-    protocol: TCP
+  {{- range $key, $port := .Values.ports }}
+  - name: {{ $key }}
+    port: {{ $port.containerPort }}
+    targetPort: {{ $key }}
+    protocol: {{ $port.protocol }}
+  {{- end }}
   selector:
     app: {{ include "ttyd.name" . }}
     release: {{ .Release.Name }}

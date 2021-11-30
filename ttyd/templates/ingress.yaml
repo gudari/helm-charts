@@ -31,7 +31,7 @@ spec:
         path: {{ $.Values.ingress.path }}
         backend:
           service:
-            name: {{ include "ttyd.fullname" $ }}-ttyd
+            name: {{ include "ttyd.fullname" $ }}
             port:
               number: {{ $.Values.ports.http.containerPort }}
 {{- end }}
@@ -41,9 +41,9 @@ spec:
       - pathType: Prefix
         backend:
           service:
-            name: {{ include "ttyd.fullname" . }}-ttyd
+            name: {{ include "ttyd.fullname" . }}
             port:
-              number: {{ $.Values.tez.ui.ports.http.containerPort }}
+              number: {{ $.Values.ports.http.containerPort }}
       {{- if $.Values.ingress.path }}
         path: {{ $.Values.ingress.path }}
       {{- end }}

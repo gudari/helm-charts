@@ -1,11 +1,11 @@
 enabled: true
 image:
   repository: gudari/ttyd
-  tag: 1.6.3-hadoop-3.2.2
+  tag: 1.6.2-hadoop-3.2.2
   pullPolicy: IfNotPresent #Always
 
 # The version of the hadoop libraries being used in the image.
-ttydVersion: 1.6.3-hadoop-3.2.2
+ttydVersion: 1.6.2-hadoop-3.2.2
 
 annotations: {}
 antiAffinity: "soft"
@@ -56,7 +56,11 @@ ingress:
   enabled: true
   annotations:
     kubernetes.io/tls-acme: "true"
+
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   path: /
   hosts:
   - ttyd.gudari.io
