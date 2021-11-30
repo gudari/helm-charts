@@ -91,6 +91,13 @@ spec:
 {{- with .Values.broker.livenessProbe }}
 {{ toYaml . | indent 10 }}
 {{- end }}
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: SERVER_PROPERTIES_advertised_listeners
+          value: EXTERNAL://$(POD_NAME).{{ .Values.broker.service.external.domain }}:{{ .Values.broker.ports.external.containerPort }},INTERNAL://$(POD_NAME).{{ include "kafka.fullname" . }}-broker.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.broker.ports.internal.containerPort }},CLIENT://$(POD_NAME).{{ include "kafka.fullname" . }}-broker.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.broker.ports.client.containerPort }}
         envFrom:
         - configMapRef:
             name: {{ include "kafka.fullname" . }}-configmap

@@ -1,25 +1,29 @@
 {{- if .Values.broker.enabled }}
-{{- if .Values.broker.service.outside.enabled }}
+{{- if .Values.broker.service.external.enabled }}
+{{ range $index := until (.Values.broker.replicas | int) }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "kafka.fullname" . }}-broker-public
+  name: {{ include "kafka.fullname" $ }}-broker-public-{{ $index }}
   labels:
-    app: {{ include "kafka.name" . }}
-    chart: {{ include "kafka.chart" . }}
-    release: {{ .Release.Name }}
+    app: {{ include "kafka.name" $ }}
+    chart: {{ include "kafka.chart" $ }}
+    release: {{ $.Release.Name }}
     component: broker
 spec:
-  type: {{ .Values.broker.service.outside.type }}
+  type: {{ $.Values.broker.service.external.type }}
   ports:
-  - name: outside
-    port: {{ .Values.broker.ports.outside.containerPort }}
-    targetPort: {{ .Values.broker.ports.outside.containerPort }}
-    protocol: {{ .Values.broker.ports.outside.protocol }}
-  loadBalancerIP: {{ .Values.broker.service.outside.loadBalancerIP }}
+  - name: external
+    port: {{ $.Values.broker.ports.external.containerPort }}
+    targetPort: {{ $.Values.broker.ports.external.containerPort }}
+    protocol: {{ $.Values.broker.ports.external.protocol }}
+  loadBalancerIP: {{ (index $.Values.broker.service.external.loadBalancerIPs $index) }}
   selector:
-    app: {{ include "kafka.name" . }}
-    release: {{ .Release.Name }}
+    statefulset.kubernetes.io/pod-name: {{ include "kafka.fullname" $ }}-broker-{{ $index }}
+    app: {{ include "kafka.name" $ }}
+    release: {{ $.Release.Name }}
     component: broker
+---
+{{- end }}
 {{- end }}
 {{- end }}

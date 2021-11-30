@@ -77,8 +77,11 @@ broker:
         accessMode: ReadWriteOnce
         size: 5Gi
   service:
-    outside:
-      enable: true
-      loadBalancerIP: 192.168.1.205
+    external:
+      enabled: true
+      loadBalancerIPs:
+      - 192.168.1.205
+      - 192.168.1.206
+      - 192.168.1.207
       type: LoadBalancer
-      domain: gudari.io
+      domain: external.gudari.io

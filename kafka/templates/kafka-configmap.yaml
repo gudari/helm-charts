@@ -28,6 +28,5 @@ data:
   SERVER_PROPERTIES_group_initial_rebalance_delay_ms: "0"
   SERVER_PROPERTIES_inter_broker_listener_name: INTERNAL
   SERVER_PROPERTIES_listeners: CLIENT://:{{ .Values.broker.ports.client.containerPort }},INTERNAL://:{{ .Values.broker.ports.internal.containerPort }},EXTERNAL://:{{ .Values.broker.ports.external.containerPort }}
-  SERVER_PROPERTIES_advertised_listeners: EXTERNAL://kafka.{{ .Values.broker.service.outside.domain }}:31090,INTERNAL://{{ include "kafka.fullname" . }}-broker-0.{{ include "kafka.fullname" . }}-broker.{{ include "kafka.fullname" . }}.svc.cluster.local:{{ .Values.broker.ports.client.containerPort }},CLIENT://{{ include "kafka.fullname" . }}-broker-0.{{ include "kafka.fullname" . }}-broker.{{ include "kafka.fullname" . }}.svc.cluster.local:{{ .Values.broker.ports.client.containerPort }}
   SERVER_PROPERTIES_listener_security_protocol_map: CLIENT:PLAINTEXT, INTERNAL:PLAINTEXT, EXTERNAL:PLAINTEXT
 {{- end }}
