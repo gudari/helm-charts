@@ -1,8 +1,8 @@
 apiVersion: v2
-description: The Apache Hadoop Version 3.2.1.
+description: The Apache Hadoop Version 3.2.2.
 name: hadoop
 version: 0.0.1
-appVersion: 3.2.1
+appVersion: 3.2.2
 home: https://hadoop.apache.org/
 sources:
 - https://github.com/apache/hadoop
