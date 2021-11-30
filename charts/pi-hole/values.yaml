@@ -16,6 +16,7 @@ pihole:
     - pihole.gudari.io
     annotations:
       kubernetes.io/tls-acme: "true"
+      kubernetes.io/ingress.class: "nginx"
     tls:
     - secretName: pihole-tls
       hosts:
@@ -43,6 +44,8 @@ pihole:
       - address=/elasticsearch.gudari.io/192.168.1.202
       - address=/mongodb.gudari.io/192.168.1.203
       - address=/nfsgateway.gudari.io/192.168.1.204
-      - address=/kafka.gudari.io/192.168.1.205
+      - address=/rpi-kafka-broker-0.external.gudari.io/192.168.1.205
+      - address=/rpi-kafka-broker-1.external.gudari.io/192.168.1.206
+      - address=/rpi-kafka-broker-2.external.gudari.io/192.168.1.207
   whitelist:
   - ads-serve.brave.com

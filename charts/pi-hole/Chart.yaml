@@ -1,15 +1,14 @@
 apiVersion: v2
 description: Network-wide Ad Blocking.
 icon: https://wp-cdn.pi-hole.net/wp-content/uploads/2018/12/pihole-text-logo-white.png.webp
-engine: gotpl
 name: pi-hole
 sources:
   - https://github.com/pi-hole/pi-hole
-version: 2.5.2
+version: 2.5.3
 appVersion: 2021.10.1
 home: https://pi-hole.net/
 dependencies:
   - name: pihole
-    version: "2.5.2"
+    version: "2.5.3"
     repository: https://mojo2600.github.io/pihole-kubernetes/
     condition: pihole.enabled

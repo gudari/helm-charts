@@ -1,14 +1,13 @@
 apiVersion: v2
 description: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
-engine: gotpl
 name: ingress-nginx
 sources:
   - https://github.com/kubernetes/ingress-nginx
-version: 3.39.0
-appVersion: v0.49.3
+version: 4.0.12
+appVersion: 1.1.0
 home: https://kubernetes.github.io/ingress-nginx/
 dependencies:
   - name: ingress-nginx
-    version: "3.39.0"
+    version: "4.0.12"
     repository: https://kubernetes.github.io/ingress-nginx
     condition: ingress-nginx.enabled

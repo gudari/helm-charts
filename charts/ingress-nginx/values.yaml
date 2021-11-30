@@ -32,7 +32,7 @@ ingress-nginx:
     image:
       registry: k8s.gcr.io
       image: ingress-nginx/controller
-      tag: "v0.49.3"
+      tag: "v1.1.0"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
