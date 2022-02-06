@@ -86,7 +86,6 @@ data:
   YARN_SITE_XML_yarn_nodemanager_aux___services_mapreduce__shuffle_class: org.apache.hadoop.mapred.ShuffleHandler
 #  YARN_SITE_XML_yarn_nodemanager_aux___services_tez__shuffle_class: org.apache.tez.auxservices.ShuffleHandler
   YARN_SITE_XML_yarn_nodemanager_address: 0.0.0.0:45454
-  YARN_SITE_XML_yarn_web___proxy_address: {{ index .Values.yarn.resourceManager.ingress.hosts 0 }}
 
   ## Timeline server configuration
   YARN_SITE_XML_yarn_timeline___service_enabled: "true"

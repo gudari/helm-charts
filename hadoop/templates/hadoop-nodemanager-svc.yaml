@@ -25,3 +25,44 @@ spec:
     release: {{ .Release.Name }}
     component: yarn-nodemanager
 {{- end }}
+---
+{{- if and .Values.yarn.nodeManager.enabled .Values.yarn.nodeManager.servicePerReplica.enabled }}
+{{- $count := .Values.yarn.nodeManager.replicas | int -}}
+{{- $serviceValues := .Values.yarn.nodeManager.servicePerReplica -}}
+apiVersion: v1
+kind: List
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-nodemanager-serviceperreplica
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ $.Release.Name }}
+    component: yarn-nodemanager
+items:
+{{- range $i, $e := until $count }}
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: {{ include "hadoop.fullname" $ }}-yarn-nodemanager-{{ $i }}
+      labels:
+        app: {{ include "hadoop.name" $ }}
+        chart: {{ include "hadoop.chart" $ }}
+        release: {{ $.Release.Name }}
+        component: yarn-nodemanager
+    spec:
+      {{- if $serviceValues.clusterIP }}
+      clusterIP: {{ $serviceValues.clusterIP }}
+      {{- end }}
+      ports:
+        - name: web
+          port: {{ $serviceValues.port }}
+          targetPort: {{ $serviceValues.containerPort }}
+      selector:
+        app: {{ include "hadoop.name" $ }}
+        release: {{ $.Release.Name }}
+        component: yarn-nodemanager
+        statefulset.kubernetes.io/pod-name: {{ include "hadoop.fullname" $ }}-yarn-nodemanager-{{ $i }}  
+      type: "{{ $serviceValues.type }}"
+{{ end }}
+{{ end }}
+  

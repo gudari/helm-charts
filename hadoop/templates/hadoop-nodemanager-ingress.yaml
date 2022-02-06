@@ -1,0 +1,67 @@
+{{- if .Values.yarn.nodeManager.enabled }}
+{{- if and .Values.yarn.nodeManager.servicePerReplica.enabled .Values.yarn.nodeManager.ingressPerReplica.enabled }}
+{{- $count := .Values.yarn.nodeManager.replicas | int -}}
+{{- $ingressValues := .Values.yarn.nodeManager.ingressPerReplica -}}
+{{- range $i, $e := until $count }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "hadoop.fullname" $ }}-yarn-nodemanager-{{ $i }}
+  labels:
+    app: {{ include "hadoop.name" $ }}
+    chart: {{ include "hadoop.chart" $ }}
+    release: {{ $.Release.Name }}
+    component: yarn-nodemanager
+{{- if $ingressValues.annotations }}
+  annotations:
+  {{- range $annot, $value := $ingressValues.annotations }}
+    {{ $annot }}: "{{ $value }}"
+  {{- end }}
+{{- end }}
+spec:
+  {{- if $ingressValues.tls }}
+  tls:
+  {{- range $t := $ingressValues.tls }}
+  - secretName: {{ $t.secretName }}-{{ $i }}
+    {{- if $t.domains }}
+    hosts:
+    {{- range $domain := $t.domains }}
+    - {{ $ingressValues.hostPrefix }}-{{ $i }}.{{ $domain }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  rules:
+  {{- if $ingressValues.domains  }}
+  {{- range $domain := $ingressValues.domains }}
+  - host: {{ $ingressValues.hostPrefix }}-{{ $i }}.{{ $domain }}
+    http:
+      paths:
+    {{ if $ingressValues.extraPaths }}
+    {{ toYaml $ingressValues.extraPaths | indent 12 }}
+    {{- end }}
+      - pathType: Prefix
+        path: {{ $ingressValues.path }}
+        backend:
+          service:
+            name: {{ include "hadoop.fullname" $ }}-yarn-nodemanager-{{ $i }}
+            port:
+              number: {{ $.Values.yarn.nodeManager.ports.api.containerPort }}
+  {{- end }}
+  {{- else }}
+  - http:
+      paths:
+      - pathType: Prefix
+        backend:
+          name: {{ include "hadoop.fullname" $ }}-yarn-nodemanager-{{ $i }}
+          port:
+            number: {{ $.Values.yarn.nodeManager.ports.api.containerPort }}
+      {{- if $ingressValues.path }}
+        path: {{ $ingressValues.path }}
+      {{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

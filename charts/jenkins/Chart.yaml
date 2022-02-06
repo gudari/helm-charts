@@ -1,15 +1,14 @@
 apiVersion: v2
 description: MetalLB is a load-balancer implementation for bare metal Kubernetes clusters, using standard routing protocols.
 icon: https://wiki.jenkins-ci.org/download/attachments/2916393/logo.png
-engine: gotpl
 name: jenkins
 sources:
   - https://github.com/jenkinsci/jenkins
-version: 3.4.0
-appVersion: 2.235.4
+version: 3.9.3
+appVersion: 2.319.1
 home: https://jenkins.io/
 dependencies:
   - name: jenkins
-    version: "3.4.0"
+    version: "3.9.3"
     repository: https://charts.jenkins.io
     condition: jenkins.enabled

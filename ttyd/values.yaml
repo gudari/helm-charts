@@ -1,11 +1,11 @@
 enabled: true
 image:
   repository: gudari/ttyd
-  tag: 1.6.2-hadoop-3.2.2
-  pullPolicy: IfNotPresent #Always
+  tag: 1.6.1-hadoop-3.2.2
+  pullPolicy: Always #Always
 
 # The version of the hadoop libraries being used in the image.
-ttydVersion: 1.6.2-hadoop-3.2.2
+ttydVersion: 1.6.1-hadoop-3.2.2
 
 annotations: {}
 antiAffinity: "soft"

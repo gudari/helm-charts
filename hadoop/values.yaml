@@ -3,7 +3,7 @@
 image:
   repository: gudari/hadoop
   tag: 3.2.2
-  pullPolicy: IfNotPresent #IfNotPresent
+  pullPolicy: IfNotPresent #Always
 
 # The version of the hadoop libraries being used in the image.
 hadoopVersion: 3.2.2
@@ -458,6 +458,27 @@ yarn:
       failureThreshold: 6
       periodSeconds: 30
       successThreshold: 1
+    servicePerReplica:
+      enabled: true
+      type: ClusterIP
+      port: 8042
+      targetPort: 8042
+    ingressPerReplica:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+        kubernetes.io/ingress.class: "nginx"
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+      path: /
+      hostPrefix: nodemanager
+      domains:
+      - gudari.io
+      extraPaths: []
+      tls:
+      - secretName: yarn-tls
+        domains:
+        - gudari.io
 
   timeLineServer:
     enabled: true

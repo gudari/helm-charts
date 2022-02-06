@@ -3,7 +3,7 @@ jenkins:
 
   controller:
     image: "gudari/jenkins"
-    tag: "2.289.1"
+    tag: "2.319.1"
     adminUser: "admin"
     adminPassword: "admin123"
     resources:
@@ -16,10 +16,10 @@ jenkins:
 
     # List of plugins to be install during Jenkins master start
     installPlugins:
-      - kubernetes:1.30.0
+      - kubernetes:1.30.11
       - workflow-aggregator:2.6
-      - git:4.7.2
-      - configuration-as-code:1.54
+      - git:4.10.0
+      - configuration-as-code:1.55
     installLatestPlugins: true
   
     affinity:
